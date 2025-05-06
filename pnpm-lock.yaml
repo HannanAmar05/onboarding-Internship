@@ -8,6 +8,9 @@ dependencies:
   '@ant-design/icons':
     specifier: ^5.5.1
     version: 5.5.2(react-dom@18.3.1)(react@18.3.1)
+  '@sentry/react':
+    specifier: ^9.15.0
+    version: 9.15.0(react@18.3.1)
   '@tanstack/react-query':
     specifier: ^5.59.14
     version: 5.64.1(react@18.3.1)
@@ -1917,10 +1920,51 @@ packages:
     dev: true
     optional: true
 
+  /@sentry-internal/browser-utils@9.15.0:
+    resolution: {integrity: sha512-tIM+9zXCefkInRiNmBkXKgkamRjEOlAcf768cBKlMWVOatfNrSEB0UEV7qkAYqnQGWkbPkHFMbFJxWptydLODw==}
+    engines: {node: '>=18'}
+    dependencies:
+      '@sentry/core': 9.15.0
+    dev: false
+
+  /@sentry-internal/feedback@9.15.0:
+    resolution: {integrity: sha512-jyN0r57WL8V5ViwZpiNvbIhF9I89jxn6mtIQcyV85EjIXDyzJmeTgxc/FIU0kcDVv6zso3qnGRJUxGK+GvoYZg==}
+    engines: {node: '>=18'}
+    dependencies:
+      '@sentry/core': 9.15.0
+    dev: false
+
+  /@sentry-internal/replay-canvas@9.15.0:
+    resolution: {integrity: sha512-a1/oiXwcW5OmILjD7/R2UEsPQWXJBUr0u388uCKDUGeyXLxBBbIJGS5E8oLwVQLVxhVJrODgxvT19z9OVcbn7g==}
+    engines: {node: '>=18'}
+    dependencies:
+      '@sentry-internal/replay': 9.15.0
+      '@sentry/core': 9.15.0
+    dev: false
+
+  /@sentry-internal/replay@9.15.0:
+    resolution: {integrity: sha512-lv6ENRmfeBuod6Tr1WgLeF0+wIIXlHWNAGofsaNUvm8UKS7USicFsQWKOZPk4UyjTfrEClPp2vx+o7aUcZS6TQ==}
+    engines: {node: '>=18'}
+    dependencies:
+      '@sentry-internal/browser-utils': 9.15.0
+      '@sentry/core': 9.15.0
+    dev: false
+
   /@sentry/babel-plugin-component-annotate@3.0.0:
     resolution: {integrity: sha512-AJEt9UtU9euB6tDLRQRpCl0EUvY5UlDQEaMSu948OHC+E2jEDoh9RzmfxtqKaDhjT/6WO6g4UoSBNOLxdZkptw==}
     engines: {node: '>= 14'}
     dev: true
+
+  /@sentry/browser@9.15.0:
+    resolution: {integrity: sha512-ppHESKFVQFpAb3rQI2ateDkmMytVcvAWsjZrZ3hF9iEnO3iTIIu32ib5nqQUL4KKXZQovYnDrSlDcdv3ZwX/8Q==}
+    engines: {node: '>=18'}
+    dependencies:
+      '@sentry-internal/browser-utils': 9.15.0
+      '@sentry-internal/feedback': 9.15.0
+      '@sentry-internal/replay': 9.15.0
+      '@sentry-internal/replay-canvas': 9.15.0
+      '@sentry/core': 9.15.0
+    dev: false
 
   /@sentry/bundler-plugin-core@3.0.0:
     resolution: {integrity: sha512-vQofxVcdCxogQG4XZ41h4G07lspmN1SXOf30PgdDrR5JSleZrlevtDVbqadX2nMpSRxtyweL1jzzZ01+AMzoXg==}
@@ -2024,6 +2068,23 @@ packages:
       - encoding
       - supports-color
     dev: true
+
+  /@sentry/core@9.15.0:
+    resolution: {integrity: sha512-lBmo3bzzaYUesdzc2H5K3fajfXyUNuj5koqyFoCAI8rnt9CBl7SUc/P07+E5eipF8mxgiU3QtkI7ALzRQN8pqQ==}
+    engines: {node: '>=18'}
+    dev: false
+
+  /@sentry/react@9.15.0(react@18.3.1):
+    resolution: {integrity: sha512-8nojSjiEd/EWIgoWVfkNIkBGL2yoFZoVMBUTcYlypsMnUHNko2RJItOBqZs5/DRBxuzfBKVt8PF+gkhQOm6mPg==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      react: ^16.14.0 || 17.x || 18.x || 19.x
+    dependencies:
+      '@sentry/browser': 9.15.0
+      '@sentry/core': 9.15.0
+      hoist-non-react-statics: 3.3.2
+      react: 18.3.1
+    dev: false
 
   /@sentry/vite-plugin@3.0.0:
     resolution: {integrity: sha512-E2elyHjP3Wqnk2uXr9C17jHRQBKX8jEOpzOnEOiXYDI2FBfehs9ttj9yX1I7H8ofCiqO2EsTu5r2a0C26ZWi+w==}
@@ -3537,7 +3598,6 @@ packages:
     resolution: {integrity: sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw==}
     dependencies:
       react-is: 16.13.1
-    dev: true
 
   /https-proxy-agent@5.0.1:
     resolution: {integrity: sha512-dFcAjpTQFgoLMzC2VwU+C/CbS7uRL0lWmxDITmqm7C+7F0Odmj6s9l6alZc6AELXhrnggM2CeWSXHGOdX2YtwA==}
@@ -6028,7 +6088,6 @@ packages:
     name: admiral
     version: 2.0.0-beta.99
     engines: {node: 18 || 20 || 22, pnpm: 8.14.1}
-    prepare: true
     requiresBuild: true
     peerDependencies:
       '@ant-design/icons': ^5.3.6
