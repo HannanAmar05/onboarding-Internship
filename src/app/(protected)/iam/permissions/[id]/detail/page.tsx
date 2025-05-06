@@ -7,7 +7,7 @@ import { usePermissionQuery } from "../_hooks/use-permission-query";
 import { Link, useNavigate, useParams } from "react-router";
 import { ROUTES } from "@/commons/constants/routes";
 import { urlParser } from "@/utils/url-parser";
-import { useDeletePermissionMutation } from "../../list/_hooks/use-delete-permission-mutation";
+import { useDeletePermissionMutation } from "../../_hooks/use-delete-permission-mutation";
 
 const Component = () => {
   const params = useParams();
