@@ -20,6 +20,10 @@ import { TUserItem } from "@/api/user/type";
 import { ROUTES } from "@/commons/constants/routes";
 import { urlParser } from "@/utils/url-parser";
 import { useState } from "react";
+import { PERMISSIONS } from "@/commons/constants/permissions";
+import { Guard } from "@/app/_components/guard";
+
+const permissions = [PERMISSIONS.USERS.READ_USERS];
 
 const provinces = [
   {
@@ -79,8 +83,8 @@ const Component = () => {
 
   const columns: ColumnsType<TUserItem> = [
     {
-      dataIndex: "fullname",
-      key: "fullname",
+      dataIndex: "name",
+      key: "name",
       title: "Name",
     },
     {
@@ -93,7 +97,11 @@ const Component = () => {
       title: "Role",
       key: "role",
       render: (_, record) => {
-        return record.roles.map((role) => role.name).join(", ");
+        return (
+          <Guard permissions={permissions} fallback={"-"}>
+            {record.roles.map((role) => role.name).join(", ")}
+          </Guard>
+        );
       },
     },
     {
