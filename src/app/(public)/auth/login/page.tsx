@@ -12,13 +12,6 @@ const Component: React.FC = () => {
 
   const isMobile = useIsMobileScreen();
 
-  const redirectUrl = new URL("/auth/oauth-callback", import.meta.env.VITE_BASE_URL);
-
-  const authFusionLoginUrl = new URL(
-    `/oauth2/authorize?client_id=${import.meta.env.VITE_AUTH_FUSION_ID}&redirect_uri=${redirectUrl.toString()}&response_type=code&tenantId=${import.meta.env.VITE_AUTH_FUSION_TENANT_ID}`,
-    import.meta.env.VITE_AUTH_FUSION_ISSUER_URL,
-  );
-
   useEffect(() => {
     if (session.status === "authenticated") {
       navigate(searchParams.get("callbackUrl") || "/dashboard");
@@ -77,19 +70,6 @@ const Component: React.FC = () => {
             </Button>
           </Form.Item>
         </Form>
-
-        <Typography.Text style={{ display: "block", textAlign: "center", margin: "1rem 0" }}>
-          Or log in with your credentials
-        </Typography.Text>
-
-        <Button
-          href={authFusionLoginUrl.toString()}
-          type="primary"
-          htmlType="button"
-          style={{ width: "100%", marginBottom: "1rem" }}
-        >
-          Log in with SSO
-        </Button>
       </Col>
     </Row>
   );
