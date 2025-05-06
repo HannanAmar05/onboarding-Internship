@@ -9,21 +9,21 @@ export const ROUTES = {
   },
   iam: {
     users: {
-      list: "/iam/users/list",
+      list: "/iam/users",
       create: "/iam/users/create",
       detail: "/iam/users/:id/detail",
       update: "/iam/users/:id/update",
       delete: "/iam/users/:id/delete",
     },
     roles: {
-      list: "/iam/roles/list",
+      list: "/iam/roles",
       create: "/iam/roles/create",
       detail: "/iam/roles/:id/detail",
       update: "/iam/roles/:id/update",
       delete: "/iam/roles/:id/delete",
     },
     permissions: {
-      list: "/iam/permissions/list",
+      list: "/iam/permissions",
       create: "/iam/permissions/create",
       detail: "/iam/permissions/:id/detail",
       update: "/iam/permissions/:id/update",

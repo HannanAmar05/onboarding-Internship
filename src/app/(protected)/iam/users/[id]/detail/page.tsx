@@ -6,7 +6,7 @@ import { useUserQuery } from "../_hooks/use-user-query";
 import { Link, useNavigate, useParams } from "react-router";
 import { ROUTES } from "@/commons/constants/routes";
 import { urlParser } from "@/utils/url-parser";
-import { useDeleteUserMutation } from "../../list/_hooks/use-delete-user-mutation";
+import { useDeleteUserMutation } from "../../_hooks/use-delete-user-mutation";
 
 export const Component = () => {
   const params = useParams();
