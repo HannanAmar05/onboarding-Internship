@@ -9,6 +9,15 @@ import {
 import "antd/dist/reset.css";
 import { middleware } from "./middleware";
 import { ReactQueryProvider } from "./libs/react-query/react-query-provider";
+import * as Sentry from "@sentry/react";
+import { env } from "./libs/env";
+
+Sentry.init({
+  dsn: env.VITE_SENTRY_DSN,
+  // Setting this option to true will send default PII data to Sentry.
+  // For example, automatic IP address collection on events
+  sendDefaultPii: true,
+});
 
 const files = import.meta.glob("./app/**/*(page|layout).tsx");
 const errorFiles = import.meta.glob("./app/**/*error.tsx");
