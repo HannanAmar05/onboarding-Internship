@@ -4,7 +4,9 @@ import { ROUTES } from "./routes";
 import { PERMISSIONS } from "./permissions";
 import { ReactNode } from "react";
 
-const { DashboardFilled, UserOutlined } = lazily(() => import("@ant-design/icons"));
+const { DashboardFilled, UserOutlined, StopFilled, QuestionCircleOutlined } = lazily(
+  () => import("@ant-design/icons"),
+);
 
 export type TSidebarItem = {
   key: string;
@@ -19,6 +21,16 @@ export const SIDEBAR_ITEMS: TSidebarItem[] = [
     key: "dashboard",
     label: <Link to="/dashboard">Dashboard</Link>,
     icon: <DashboardFilled />,
+  },
+  {
+    key: "notallowed",
+    label: <Link to="/notallowed">Not Allowed</Link>,
+    icon: <StopFilled />,
+  },
+  {
+    key: "examples",
+    label: <Link to="/examples">FAQs</Link>,
+    icon: <QuestionCircleOutlined />,
   },
   {
     key: "users",

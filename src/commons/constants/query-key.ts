@@ -1,4 +1,11 @@
 export const QUERY_KEY = {
+  FAQ: {
+    LIST: "get-faq-list",
+    DETAIL: "get-detail-faq",
+    CREATE: "create-faq",
+    UPDATE: "update-faq",
+    DELETE: "delete-faq",
+  },
   BOOKS: {
     LIST: "get-books-list",
     DETAIL: "get-books-detail",
