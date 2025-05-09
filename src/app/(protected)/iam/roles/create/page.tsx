@@ -5,6 +5,9 @@ import { RoleFormData } from "../_components/form-role/schema";
 import { useNavigate } from "react-router";
 import { ROUTES } from "@/commons/constants/routes";
 import { usePostCreateRole } from "./_hooks/use-post-create-role-";
+import { PERMISSIONS } from "@/commons/constants/permissions";
+
+export const permissions = [PERMISSIONS.ROLES.CREATE_ROLES];
 
 export const Component = () => {
   const navigate = useNavigate();

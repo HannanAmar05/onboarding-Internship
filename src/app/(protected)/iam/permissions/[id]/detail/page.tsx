@@ -8,6 +8,11 @@ import { Link, useNavigate, useParams } from "react-router";
 import { ROUTES } from "@/commons/constants/routes";
 import { urlParser } from "@/utils/url-parser";
 import { useDeletePermissionMutation } from "../../_hooks/use-delete-permission-mutation";
+import { PERMISSIONS } from "@/commons/constants/permissions";
+import { Guard } from "@/app/_components/guard";
+
+export const permissions = [PERMISSIONS.PERMISSIONS.READ_PERMISSIONS];
+
 
 const Component = () => {
   const params = useParams();
@@ -35,28 +40,38 @@ const Component = () => {
     <Page
       topActions={
         <Flex gap={10}>
-          <Button
-            htmlType="button"
-            onClick={() => {
-              deletePermissionMutation.mutate(permissionQuery.data?.data.id ?? "", {
-                onSuccess: () => {
-                  message.success("Permission berhasil dihapus");
-                  navigate(ROUTES.iam.permissions.list);
-                },
-              });
-            }}
+          <Guard
+            permissions={[PERMISSIONS.PERMISSIONS.DELETE_PERMISSIONS]}
+            fallback={<></>}
           >
-            Delete
-          </Button>
-          <Link
-            to={urlParser(ROUTES.iam.roles.update, {
-              id: Number(permissionQuery.data?.data.id),
-            })}
-          >
-            <Button htmlType="button" type="primary">
-              Edit
+            <Button
+              htmlType="button"
+              onClick={() => {
+                deletePermissionMutation.mutate(permissionQuery.data?.data.id ?? "", {
+                  onSuccess: () => {
+                    message.success("Permission berhasil dihapus");
+                    navigate(ROUTES.iam.permissions.list);
+                  },
+                });
+              }}
+            >
+              Delete
             </Button>
-          </Link>
+          </Guard>
+          <Guard
+            permissions={[PERMISSIONS.PERMISSIONS.UPDATE_PERMISSIONS]}
+            fallback={<></>}
+          >
+            <Link
+              to={urlParser(ROUTES.iam.roles.update, {
+                id: Number(permissionQuery.data?.data.id),
+              })}
+            >
+              <Button htmlType="button" type="primary">
+                Edit
+              </Button>
+            </Link>
+          </Guard>
         </Flex>
       }
       title="Detail Permission"

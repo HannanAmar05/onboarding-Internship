@@ -7,6 +7,9 @@ import { TRoleUpdateRequest } from "@/api/role/type";
 import { useNavigate, useParams } from "react-router";
 import { FormRole } from "../../_components/form-role";
 import { urlParser } from "@/utils/url-parser";
+import { PERMISSIONS } from "@/commons/constants/permissions";
+
+export const permissions = [PERMISSIONS.ROLES.UPDATE_ROLES];
 
 export const Component = () => {
   const params = useParams();

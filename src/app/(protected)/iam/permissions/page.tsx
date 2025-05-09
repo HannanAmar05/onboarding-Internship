@@ -20,6 +20,10 @@ import { useFilter } from "@/app/_hooks/datatable/use-filter";
 import { TPermissionItem } from "@/api/permission/type";
 import { ROUTES } from "@/commons/constants/routes";
 import { urlParser } from "@/utils/url-parser";
+import { PERMISSIONS } from "@/commons/constants/permissions";
+import { Guard } from "@/app/_components/guard";
+
+export const permissions = [PERMISSIONS.PERMISSIONS.READ_PERMISSIONS];
 
 export const Component = () => {
   const navigate = useNavigate();
@@ -45,21 +49,31 @@ export const Component = () => {
             <Link to={urlParser(ROUTES.iam.permissions.detail, { id: record?.id })}>
               <Button type="link" icon={<EyeOutlined style={{ color: "green" }} />} />
             </Link>
-            <Button
-              type="link"
-              icon={<DeleteOutlined style={{ color: "red" }} />}
-              onClick={() => {
-                deletePermissionMutation.mutate(record.id, {
-                  onSuccess: () => {
-                    message.success("Permission berhasil dihapus");
-                    navigate(0);
-                  },
-                });
-              }}
-            />
-            <Link to={`/iam/permissions/${record?.id}/update`}>
-              <Button type="link" icon={<EditOutlined />} />
-            </Link>
+            <Guard
+              permissions={[PERMISSIONS.PERMISSIONS.DELETE_PERMISSIONS]}
+              fallback={<></>}
+            >
+              <Button
+                type="link"
+                icon={<DeleteOutlined style={{ color: "red" }} />}
+                onClick={() => {
+                  deletePermissionMutation.mutate(record.id, {
+                    onSuccess: () => {
+                      message.success("Permission berhasil dihapus");
+                      navigate(0);
+                    },
+                  });
+                }}
+              />
+            </Guard>
+            <Guard
+              permissions={[PERMISSIONS.PERMISSIONS.UPDATE_PERMISSIONS]}
+              fallback={<></>}
+            >
+              <Link to={`/iam/permissions/${record?.id}/update`}>
+                <Button type="link" icon={<EditOutlined />} />
+              </Link>
+            </Guard>
           </Flex>
         );
       },
@@ -78,7 +92,11 @@ export const Component = () => {
   ];
 
   return (
-    <Page title="Permissions" breadcrumbs={breadcrumbs} topActions={<TopAction />} noStyle>
+    <Page title="Permissions" breadcrumbs={breadcrumbs} topActions={
+      <Guard permissions={[PERMISSIONS.PERMISSIONS.CREATE_PERMISSIONS]} fallback={<></>}>
+        <TopAction />
+      </Guard>
+    } noStyle>
       <ActionTable
         onSearch={(value) => setFilters({ search: value })}
         searchValue={filters.search}

@@ -7,6 +7,10 @@ import { useGetDetailRole } from "../_hooks/use-get-detail-role";
 import { ROUTES } from "@/commons/constants/routes";
 import { urlParser } from "@/utils/url-parser";
 import { useDeleteRole } from "../../_hooks/use-delete-role";
+import { PERMISSIONS } from "@/commons/constants/permissions";
+import { Guard } from "@/app/_components/guard";
+
+export const permissions = [PERMISSIONS.ROLES.READ_ROLES];
 
 export const Component = () => {
   const params = useParams();
@@ -34,28 +38,38 @@ export const Component = () => {
     <Page
       topActions={
         <Flex gap={10}>
-          <Button
-            htmlType="button"
-            onClick={() => {
-              deleteRoleMutation.mutate(roleQuery.data?.data.id ?? "", {
-                onSuccess: () => {
-                  message.success("Role berhasil dihapus");
-                  navigate(ROUTES.iam.users.list);
-                },
-              });
-            }}
+          <Guard
+            permissions={[PERMISSIONS.ROLES.DELETE_ROLES]}
+            fallback={<></>}
           >
-            Delete
-          </Button>
-          <Link
-            to={urlParser(ROUTES.iam.roles.update, {
-              id: Number(roleQuery.data?.data.id),
-            })}
-          >
-            <Button htmlType="button" type="primary">
-              Edit
+            <Button
+              htmlType="button"
+              onClick={() => {
+                deleteRoleMutation.mutate(roleQuery.data?.data.id ?? "", {
+                  onSuccess: () => {
+                    message.success("Role berhasil dihapus");
+                    navigate(ROUTES.iam.users.list);
+                  },
+                });
+              }}
+            >
+              Delete
             </Button>
-          </Link>
+          </Guard>
+          <Guard
+            permissions={[PERMISSIONS.ROLES.UPDATE_ROLES]}
+            fallback={<></>}
+          >
+            <Link
+              to={urlParser(ROUTES.iam.roles.update, {
+                id: Number(roleQuery.data?.data.id),
+              })}
+            >
+              <Button htmlType="button" type="primary">
+                Edit
+              </Button>
+            </Link>
+          </Guard>
         </Flex>
       }
       title="Detail Role"

@@ -7,6 +7,10 @@ import { Link, useNavigate, useParams } from "react-router";
 import { ROUTES } from "@/commons/constants/routes";
 import { urlParser } from "@/utils/url-parser";
 import { useDeleteUserMutation } from "../../_hooks/use-delete-user-mutation";
+import { PERMISSIONS } from "@/commons/constants/permissions";
+import { Guard } from "@/app/_components/guard";
+
+export const permissions = [PERMISSIONS.USERS.READ_USERS];
 
 export const Component = () => {
   const params = useParams();
@@ -34,28 +38,35 @@ export const Component = () => {
     <Page
       topActions={
         <Flex gap={10}>
-          <Button
-            htmlType="button"
-            onClick={() => {
-              deleteUserMutation.mutate(userQuery.data?.data.id ?? "", {
-                onSuccess: () => {
-                  message.success("User berhasil dihapus");
-                  navigate(ROUTES.iam.users.list);
-                },
-              });
-            }}
+          <Guard
+            permissions={[PERMISSIONS.USERS.DELETE_USERS]}
+            fallback={<></>}
           >
-            Delete
-          </Button>
-          <Link
-            to={urlParser(ROUTES.iam.users.update, {
-              id: Number(userQuery.data?.data.id),
-            })}
-          >
-            <Button htmlType="button" type="primary">
-              Edit
+            <Button
+              htmlType="button"
+              onClick={() => {
+                deleteUserMutation.mutate(userQuery.data?.data.id ?? "", {
+                  onSuccess: () => {
+                    message.success("User berhasil dihapus");
+                    navigate(ROUTES.iam.users.list);
+                  },
+                });
+              }}
+            >
+              Delete
             </Button>
-          </Link>
+          </Guard>
+          <Guard permissions={[PERMISSIONS.USERS.UPDATE_USERS]} fallback={<></>}>
+            <Link
+              to={urlParser(ROUTES.iam.users.update, {
+                id: Number(userQuery.data?.data.id),
+              })}
+            >
+              <Button htmlType="button" type="primary">
+                Edit
+              </Button>
+            </Link>
+          </Guard>
         </Flex>
       }
       title="Detail User"

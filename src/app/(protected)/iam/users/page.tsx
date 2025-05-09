@@ -23,7 +23,7 @@ import { useState } from "react";
 import { PERMISSIONS } from "@/commons/constants/permissions";
 import { Guard } from "@/app/_components/guard";
 
-const permissions = [PERMISSIONS.USERS.READ_USERS];
+export const permissions = [PERMISSIONS.USERS.READ_USERS];
 
 const provinces = [
   {
@@ -97,11 +97,7 @@ const Component = () => {
       title: "Role",
       key: "role",
       render: (_, record) => {
-        return (
-          <Guard permissions={permissions} fallback={"-"}>
-            {record.roles.map((role) => role.name).join(", ")}
-          </Guard>
-        );
+        return record.roles.map((role) => role.name).join(", ");
       },
     },
     {
@@ -126,25 +122,29 @@ const Component = () => {
             >
               <Button type="link" icon={<EyeOutlined style={{ color: "green" }} />} />
             </Link>
-            <Button
-              type="link"
-              icon={<DeleteOutlined style={{ color: "red" }} />}
-              onClick={() => {
-                deleteUserMutation.mutate(record.id, {
-                  onSuccess: () => {
-                    message.success("User berhasil dihapus");
-                    navigate(0);
-                  },
-                });
-              }}
-            />
-            <Link
-              to={urlParser(ROUTES.iam.users.update, {
-                id: record.id,
-              })}
-            >
-              <Button type="link" icon={<EditOutlined />} />
-            </Link>
+            <Guard permissions={[PERMISSIONS.USERS.DELETE_USERS]} fallback={<></>}>
+              <Button
+                type="link"
+                icon={<DeleteOutlined style={{ color: "red" }} />}
+                onClick={() => {
+                  deleteUserMutation.mutate(record.id, {
+                    onSuccess: () => {
+                      message.success("User berhasil dihapus");
+                      navigate(0);
+                    },
+                  });
+                }}
+              />
+            </Guard>
+            <Guard permissions={[PERMISSIONS.USERS.UPDATE_USERS]} fallback={<></>}>
+              <Link
+                to={urlParser(ROUTES.iam.users.update, {
+                  id: record.id,
+                })}
+              >
+                <Button type="link" icon={<EditOutlined />} />
+              </Link>
+            </Guard>
           </Flex>
         );
       },
@@ -163,7 +163,11 @@ const Component = () => {
   ];
 
   return (
-    <Page title="Users" breadcrumbs={breadcrumbs} topActions={<TopAction />} noStyle>
+    <Page title="Users" breadcrumbs={breadcrumbs} topActions={
+      <Guard permissions={[PERMISSIONS.USERS.CREATE_USERS]} fallback={<></>}>
+        <TopAction />
+      </Guard>
+    } noStyle>
       <Datatable
         onChange={handleChange}
         rowKey="id"
