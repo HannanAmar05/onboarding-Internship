@@ -58,7 +58,7 @@ export const PERMISSION = {
 
 This enables users to navigate to the resource via the application sidebar.
 
-* **Location:** `src/app/(protected)/_utils/menu.jsx`
+* **Location:** `src/commons/constants/sidebar.tsx`
 
 * **Action:** Add the new resource to `SIDEBAR_ITEMS`.
 
@@ -98,28 +98,7 @@ This enables users to navigate to the resource via the application sidebar.
 
 ---
 
-## 4. Create Resource API Definition
-
-Defines how data is structured and fetched for the resource.
-
-### a. API Types
-
-* **Location:** `src/api/[resource]/type.ts`
-* **Example Reference:** `src/api/examples/type.ts`
-
-### b. API Requests
-
-* **Location:** `src/api/[resource]/index.ts`
-* **Example Reference:** `src/api/examples/index.ts`
-
-### Notes
-
-* Use `snake_case` for all API request and response fields.
-* Use English for type definitions, requests, and responses.
-
----
-
-## 5. Register Resource Query Keys
+## 4. Register Resource Query Keys
 
 Query keys are used to uniquely identify API queries and mutations in the application.
 
