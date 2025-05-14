@@ -20,6 +20,7 @@ Always refer to the example files. **Do not create additional functions or featu
 Displays a list of resource items.
 
 * **Path:** `src/app/(protected)/[resource]/page.tsx`
+* Use `DataTable` from `admiral`, not `antd`
 
 ### Hooks
 
@@ -76,12 +77,10 @@ export default useDeleteFaq;
 
 ### Notes
 
-* Use **English** for file and folder names, API requests, and responses.
 * Reuse **components** from the examples — **do not** create custom components.
 * Must include:
 
   * Resource item list
-  * Realistic example data
   * Search, filter, and sort
   * Navigation to Create, Edit, and Detail pages
   * **DO NOT** add fields outside the defined specification

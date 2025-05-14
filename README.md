@@ -41,3 +41,6 @@ pnpm run build
 npm -g install serve (run once)
 serve -s dist
 ```
+
+## Prototyping with Cline
+Check detail documentation [here](./docs/CLINE_GUIDLINES.md)
