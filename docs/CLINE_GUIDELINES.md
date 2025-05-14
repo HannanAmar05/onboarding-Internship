@@ -32,7 +32,7 @@ Gunakan pendekatan ini jika kebutuhan properti lebih kompleks dan memerlukan pem
 1. **Buat file prompt baru**
 
    * Lokasi: `prompt/`
-   * Contoh: `prompt/create-module-roles.md`
+   * Contoh: `prompt/role-module.md`
 
 2. **Isi dengan spesifikasi lengkap fitur dan properti dari modul yang dimaksud.**
 
