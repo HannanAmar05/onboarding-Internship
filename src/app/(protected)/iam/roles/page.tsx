@@ -18,6 +18,10 @@ import { useDeleteRole } from "./_hooks/use-delete-role";
 import { TRoleItem } from "@/api/role/type";
 import { urlParser } from "@/utils/url-parser";
 import { ROUTES } from "@/commons/constants/routes";
+import { PERMISSIONS } from "@/commons/constants/permissions";
+import { Guard } from "@/app/_components/guard";
+
+export const permissions = [PERMISSIONS.ROLES.READ_ROLES];
 
 export const Component = () => {
   const navigate = useNavigate();
@@ -63,25 +67,29 @@ export const Component = () => {
             >
               <Button type="link" icon={<EyeOutlined style={{ color: "green" }} />} />
             </Link>
-            <Button
-              type="link"
-              icon={<DeleteOutlined style={{ color: "red" }} />}
-              onClick={() => {
-                deleteRoleMutation.mutate(record.id, {
-                  onSuccess: () => {
-                    message.success("Role berhasil dihapus");
-                    navigate(0);
-                  },
-                });
-              }}
-            />
-            <Link
-              to={urlParser(ROUTES.iam.roles.update, {
-                id: record.id,
-              })}
-            >
-              <Button type="link" icon={<EditOutlined />} />
-            </Link>
+            <Guard permissions={[PERMISSIONS.ROLES.DELETE_ROLES]} fallback={<></>}>
+              <Button
+                type="link"
+                icon={<DeleteOutlined style={{ color: "red" }} />}
+                onClick={() => {
+                  deleteRoleMutation.mutate(record.id, {
+                    onSuccess: () => {
+                      message.success("Role berhasil dihapus");
+                      navigate(0);
+                    },
+                  });
+                }}
+              />
+            </Guard>
+            <Guard permissions={[PERMISSIONS.ROLES.UPDATE_ROLES]} fallback={<></>}>
+              <Link
+                to={urlParser(ROUTES.iam.roles.update, {
+                  id: record.id,
+                })}
+              >
+                <Button type="link" icon={<EditOutlined />} />
+              </Link>
+            </Guard>
           </Flex>
         );
       },
@@ -100,7 +108,11 @@ export const Component = () => {
   ];
 
   return (
-    <Page title="Roles" breadcrumbs={breadcrumbs} topActions={<TopAction />} noStyle>
+    <Page title="Roles" breadcrumbs={breadcrumbs} topActions={
+      <Guard permissions={[PERMISSIONS.ROLES.CREATE_ROLES]} fallback={<></>}>
+        <TopAction />
+      </Guard>
+    } noStyle>
       <ActionTable
         onSearch={(value) => setFilters({ search: value })}
         searchValue={filters.search}

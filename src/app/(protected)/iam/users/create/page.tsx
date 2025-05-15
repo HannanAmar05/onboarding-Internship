@@ -7,6 +7,9 @@ import { useNavigate } from "react-router";
 import { FormUser } from "../_components/form-user";
 import { UserFormData } from "../_components/form-user/schema";
 import { ROUTES } from "@/commons/constants/routes";
+import { PERMISSIONS } from "@/commons/constants/permissions";
+
+export const permissions = [PERMISSIONS.USERS.CREATE_USERS];
 
 export const Component = () => {
   const navigate = useNavigate();

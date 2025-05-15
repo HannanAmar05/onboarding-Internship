@@ -8,6 +8,9 @@ import { FormPermission } from "../../_components/form-permission";
 import { PermissionFormData } from "../../_components/form-permission/schema";
 import { ROUTES } from "@/commons/constants/routes";
 import { urlParser } from "@/utils/url-parser";
+import { PERMISSIONS } from "@/commons/constants/permissions";
+
+export const permissions = [PERMISSIONS.PERMISSIONS.UPDATE_PERMISSIONS];
 
 export const Component = () => {
   const params = useParams();
