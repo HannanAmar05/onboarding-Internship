@@ -40,6 +40,7 @@ As a professional and experienced programmer, you are expected to:
 - Resource Name: Inventory
 - Properties: Item name, category, price, status, location.
 - Parent Menu: Management
+- Feature: Read Data
 ```
 
 This means:
@@ -50,4 +51,6 @@ Create full CRUD functionality for the Inventory resource.
 The Inventory resource should have the following properties: Item name, Category, Price, Status, Location.
 
 Add the Inventory menu under the Management parent menu. If the Management menu does not exist, create it first, then add the Inventory submenu inside it.
+
+Check feature that user request, if user request only for read data, do not create api, query keys, and page for delete, update, or create data.
 ```

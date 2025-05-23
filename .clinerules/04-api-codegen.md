@@ -10,8 +10,9 @@ If a resource is part of a **parent menu**, use the following directory structur
 
 * **Path Format:** `src/api/[parent]/[resource]/index.ts`
 * **Example:** `src/api/managements/inventories/index.ts`
-
-> 🔒 **Important:** Refer to the existing example files. Do **not** implement extra functions or features that are not explicitly included in the examples.
+* **Important:** 
+  * Refer to the existing example files. Do **not** implement extra functions or features that are not explicitly included in the examples.
+  * Understand the user request. If user only request for read data, don't create api definition for create and update
 
 ---
 
