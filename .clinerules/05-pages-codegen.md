@@ -10,8 +10,9 @@ If a resource belongs to a **Parent Menu**, follow this directory structure:
 
 * **Path Format:** `src/app/(protected)/[parent]/[resource]/page.tsx`
 * **Example:** `src/app/(protected)/managements/inventories/page.tsx`
-
-Always refer to the example files. **Do not create additional functions or features** beyond what is demonstrated.
+* **Important**:
+    * Always refer to the example files. **Do not create additional functions or features** beyond what is demonstrated.
+    * Create api request and definition based on user request. If user not request update, or create do not create the page.
 
 ---
 
@@ -47,7 +48,7 @@ export default useGetFaqs;
 
 #### b. Deleting Items (Optional)
 
-Only create this if the delete action is required.
+Only create if user request for Delete action.
 
 * **Path:** `src/app/(protected)/[resource]/_hooks/use-delete-[resource].ts`
 * **Example:**
@@ -124,7 +125,9 @@ export default useGetDetailFaq;
 
 ## 4. Shared Form Component
 
-Create this before building Create and Update pages.
+- Create this before building Create and Update pages.
+- Create Form for create and update page if user request for edit and create. If not do not create this.
+
 
 ### Form
 
@@ -164,6 +167,8 @@ export type TFAQFormData = z.infer<typeof FAQSchema>;
   * Pre-filled form with existing data
   * Include **back**, **cancel**, and **submit** buttons
 
+> Create this if user request for Edit Feature
+
 ### Hooks
 
 * **Path:** `src/app/(protected)/[resource]/[id]/update/_hooks/use-update-[resource].ts`
@@ -196,6 +201,8 @@ export default useUpdateFaq;
 
   * Blank form to create new item
   * Include **back**, **cancel**, and **submit** buttons
+
+> Create this if user request for Edit Feature
 
 ### Hooks
 

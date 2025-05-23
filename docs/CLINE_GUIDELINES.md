@@ -1,5 +1,14 @@
 # AI Prototyping dengan Cline
 
+## Sebelum Mulai Prompting
+
+Hal-hal yang perlu diperhatikan sebelum mulai menulis prompt:
+- Observasi design yang ada di figma. 
+- Apabila menemukan perbedaan antara file `examples` dengan figma, maka sesuaikan terlebih dahulu. Tujuannya untuk mengurangi proses berfikir yang dilakukan oleh AI saat generate code.
+- Pahami rules-rules yang ada di folder `.clinerules`. Apabila ditemukan rules yang kurang sesuai dengan kebutuhan projek, maka sesuaikan terlebih dahulu.
+
+## Model Rekomendasi
+
 Berikut adalah rekomendasi model yang dapat digunakan berdasarkan tingkat kompleksitas modul yang akan digenerate:
 
 | Model               | Rekomendasi Penggunaan                                                                   |

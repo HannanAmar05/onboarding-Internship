@@ -10,7 +10,9 @@ Routes determine the navigation paths for a specific resource in the application
 
 * **Location:** `src/commons/constants/routes.ts`
 * **Action:** Add a new entry for the resource under the `ROUTES` object.
-* **Rule:** Preserve all existing route definitions.
+* **Rule:** 
+  * Preserve all existing route definitions.
+  * Understand the user request. If user only request for read data, you don't need to create route for create and update
 * **Example:**
 
 ```ts
@@ -35,7 +37,9 @@ Permissions control access to various actions related to the resource.
 
 * **Location:** `src/commons/constants/permissions.ts`
 * **Action:** Add a new object for the resource under the `PERMISSION` constant.
-* **Rule:** Preserve all existing permission definitions.
+* **Rule:** 
+  * Preserve all existing permission definitions.
+  * Understand the user request. If user only request for read data, you don't need to create permission for create and update
 * **Example:**
 
 ```ts
@@ -104,7 +108,9 @@ Query keys are used to uniquely identify API queries and mutations in the applic
 
 * **Location:** `src/commons/constants/query-key.ts`
 * **Action:** Add a new entry for the resource in `QUERY_KEY`.
-* **Rule:** Preserve all existing keys.
+* **Rule:** 
+  * Preserve all existing keys.
+  * Understand the user request. If user only request for read data, you don't need to create query keys for create and update
 * **Example:**
 
 ```ts
