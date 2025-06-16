@@ -9,6 +9,7 @@ export type TFaq = {
   question: string;
   answer: string;
   status: TFaqStatus;
+  valid_date: string;
   created_at?: string | null;
   updated_at?: string | null;
   deleted_at?: string | null;
@@ -19,6 +20,7 @@ export type TFaqRequest = {
   question: string;
   answer: string;
   status?: TFaqStatus;
+  valid_date: string;
 };
 
 export type TFilterFaq = TFilterParams<{ category?: string }>;

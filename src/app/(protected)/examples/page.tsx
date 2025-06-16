@@ -11,7 +11,6 @@ import { ColumnsType } from "antd/es/table";
 import { Page } from "admiral";
 import Datatable from "admiral/table/datatable/index";
 import { generatePath, Link } from "react-router";
-import dayjs from "dayjs";
 
 import { makeSource } from "@/utils/data-table";
 import { TFaq } from "@/api/example/type";
@@ -73,15 +72,6 @@ export const Component = () => {
       render: (_, record) => {
         const { label, color } = getFaqStatus(record.status);
         return <Tag color={color}>{label}</Tag>;
-      },
-    },
-    {
-      dataIndex: "createdAt",
-      title: "Created At",
-      key: "createdAt",
-      sorter: true,
-      render: (_, record) => {
-        return record.created_at ? dayjs(record.created_at).format("DD/MM/YYYY") : "-";
       },
     },
     {

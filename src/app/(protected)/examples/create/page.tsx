@@ -7,6 +7,7 @@ import { ROUTES } from "@/commons/constants/routes";
 import FormFaq from "../_components/form";
 import useCreateFaq from "./_hooks/use-create-faq";
 import { TFAQFormData } from "../_components/form/schema";
+import { formatDate } from "@/utils/date-format";
 
 export const Component = () => {
   const navigate = useNavigate();
@@ -39,6 +40,7 @@ export const Component = () => {
             createMutation.mutate(
               {
                 ...data,
+                valid_date: formatDate(data.valid_date)!,
                 status: data.status ? "active" : "hide",
               },
               {

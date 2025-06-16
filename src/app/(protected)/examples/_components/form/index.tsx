@@ -1,4 +1,4 @@
-import { Button, Col, Form, FormProps, Input, Row, Select, Space, Switch } from "antd";
+import { Button, Col, DatePicker, Form, FormProps, Input, Row, Select, Space, Switch } from "antd";
 import { useNavigate } from "react-router";
 import { Section } from "admiral";
 
@@ -56,6 +56,11 @@ const FormFaq = ({ formProps, loading, loadingData, error, editForm }: Props) =>
             <Col span={24}>
               <Form.Item label="Answer" name="answer" required rules={[rule]}>
                 <Input.TextArea placeholder="e.g. Go to MS Office" />
+              </Form.Item>
+            </Col>
+            <Col span={24} sm={12}>
+              <Form.Item label="Valid Until" name="valid_date" rules={[rule]} required>
+                <DatePicker style={{ width: "100%" }} />
               </Form.Item>
             </Col>
             <Col span={24} sm={12}>
