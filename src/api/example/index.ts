@@ -14,6 +14,7 @@ export const getFaqs = (params: TFilterFaq): Promise<TFaqListResponse> => {
           status: "active",
           answer:
             "This application is a company management system that helps you manage your company data, users, roles, and permissions.",
+          valid_date: "2023-10-01T00:00:00.000Z",
           created_at: "2023-10-01T00:00:00.000Z",
           updated_at: "2023-10-01T00:00:00.000Z",
           deleted_at: null,
@@ -25,6 +26,7 @@ export const getFaqs = (params: TFilterFaq): Promise<TFaqListResponse> => {
           status: "hide",
           answer:
             "You can reset your password by clicking on the 'Forgot Password' link on the login page and following the instructions sent to your email.",
+          valid_date: "2023-10-01T00:00:00.000Z",
           created_at: "2023-10-01T00:00:00.000Z",
           updated_at: "2023-10-01T00:00:00.000Z",
           deleted_at: null,
@@ -52,6 +54,7 @@ export const getDetailFaq = (params: { id: string }): Promise<TFaqDetailResponse
       status: "active",
       answer:
         "This application is a company management system that helps you manage your company data, users, roles, and permissions.",
+      valid_date: "2025-10-01T00:00:00.000Z",
       created_at: "2023-10-01T00:00:00.000Z",
       updated_at: "2023-10-01T00:00:00.000Z",
       deleted_at: null,

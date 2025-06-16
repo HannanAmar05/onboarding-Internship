@@ -2,7 +2,6 @@ import { Button, ConfigProvider, Descriptions, Flex, message, Space, Tag, Typogr
 import { generatePath, useNavigate, useParams } from "react-router";
 import { Page, Section } from "admiral";
 import { DescriptionsProps } from "antd/lib";
-import dayjs from "dayjs";
 
 import { ROUTES } from "@/commons/constants/routes";
 
@@ -10,6 +9,7 @@ import useGetDetailFaq from "./_hooks/use-get-detail-examples";
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import useDeleteFaq from "../_hooks/use-delete-faq";
 import getFaqStatus from "../_utils/faq-tag";
+import { formatDate } from "@/utils/date-format";
 
 export const Component = () => {
   const { id } = useParams<{ id: string }>();
@@ -42,6 +42,13 @@ export const Component = () => {
       key: "status",
       label: "Status",
       children: <Tag color={color}>{label}</Tag>,
+    },
+    {
+      key: "valid_date",
+      label: "Valid Until",
+      children: (
+        <Typography.Text strong>{formatDate(data?.data.valid_date) ?? "-"}</Typography.Text>
+      ),
     },
     {
       key: "question",
@@ -108,49 +115,6 @@ export const Component = () => {
               bordered
               layout="horizontal"
               items={items}
-              labelStyle={{
-                width: "20%",
-                textAlign: "left",
-              }}
-              contentStyle={{
-                width: "30%",
-              }}
-              column={{
-                md: 1,
-                lg: 2,
-                xl: 2,
-                xxl: 2,
-              }}
-            />
-          </Section>
-          <Section title="Detail Information">
-            <Descriptions
-              bordered
-              layout="horizontal"
-              items={[
-                {
-                  key: "creted",
-                  label: "Created At",
-                  children: (
-                    <Typography.Text strong>
-                      {data?.data.created_at
-                        ? dayjs(data.data.created_at).format("DD/MM/YYYY")
-                        : "-"}
-                    </Typography.Text>
-                  ),
-                },
-                {
-                  key: "updated",
-                  label: "Updated At",
-                  children: (
-                    <Typography.Text strong>
-                      {data?.data.updated_at
-                        ? dayjs(data.data.updated_at).format("DD/MM/YYYY")
-                        : "-"}
-                    </Typography.Text>
-                  ),
-                },
-              ]}
               labelStyle={{
                 width: "20%",
                 textAlign: "left",

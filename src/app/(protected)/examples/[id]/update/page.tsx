@@ -3,6 +3,7 @@ import { generatePath, useNavigate, useParams } from "react-router";
 import { message } from "antd";
 
 import { ROUTES } from "@/commons/constants/routes";
+import { formatDate, formatStringToDate } from "@/utils/date-format";
 
 import FormFaq from "../../_components/form";
 import { TFAQFormData } from "../../_components/form/schema";
@@ -49,11 +50,13 @@ export const Component = () => {
             question: detailQuery.data?.data.question,
             answer: detailQuery.data?.data.answer,
             status: detailQuery.data?.data.status === "active",
+            valid_date: formatStringToDate(detailQuery.data?.data.valid_date),
           },
           onFinish: (data: TFAQFormData) => {
             updateMutation.mutate(
               {
                 ...data,
+                valid_date: formatDate(data.valid_date)!,
                 status: data.status ? "active" : "hide",
               },
               {
