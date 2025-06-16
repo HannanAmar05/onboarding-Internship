@@ -74,8 +74,8 @@ Defines how the data for a given resource is structured, requested, and handled.
 * Type definitions, request bodies, and responses must be in **English**.
 * Use **realistic and meaningful** example data:
 
-  * ❌ **Incorrect:** `{ "title": "Song 1", "artist": "Artist 1" }`
-  * ✅ **Correct:** `{ "title": "Bohemian Rhapsody", "artist": "Queen" }`
+  * **Incorrect:** `{ "title": "Song 1", "artist": "Artist 1" }`
+  * **Correct:** `{ "title": "Bohemian Rhapsody", "artist": "Queen" }`
 
 ---
 

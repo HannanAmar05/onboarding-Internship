@@ -2,7 +2,7 @@
 
 ## Tech Stack
 
-* React Vite (Typescript)
+* React + Vite (Typescript)
 * Not Next.js App
 * React Router (not React Router DOM)
 * TanStack Query
