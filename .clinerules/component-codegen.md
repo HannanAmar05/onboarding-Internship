@@ -32,7 +32,7 @@ Example:
 </Section>
 
 ```
-Implement this on Detail Page and Form (Create or Delete) if the parent has more than 1 Section.
+Implement this on Detail Page and Form (Create and Edit page) if the parent has more than 1 Section.
 
 ## Tag from Antd
 

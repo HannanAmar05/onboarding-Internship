@@ -36,6 +36,5 @@
 
 ## Date Format
 
-* Use ISO 8601 format: `DD-MM-YYYY`
-* Use `dayjs` for date handling
+If you are requested to format the date, use functions in `@/utils/date-format`.
 
