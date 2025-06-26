@@ -1,20 +1,43 @@
+import { useRef } from "react";
 import AskCookie from "react-cookie-consent";
 import { Button } from "antd";
-import { env } from "@/libs/env";
+import { ThemeProvider } from "admiral";
+import { theme } from "@/app/_components/providers/theme";
+import {
+  COOKIE_CONSENT_AGREE,
+  COOKIE_CONSENT_DECLINE,
+  COOKIE_CONSENT_NAME,
+  COOKIE_DECLINED_VALUE,
+} from "@/commons/constants/cookie-consent";
+import type { TCookieConsent } from "@/commons/types/cookie-consent";
+import useCookieConsent from "@/app/_hooks/consent/use-cookie-consent";
 
 export default function CookieConsent() {
-  const withConsent = env.VITE_COOKIE_CONSENT;
+  const acceptValue = useRef<TCookieConsent>("modify me before user accept");
+  const { isConsentViewing } = useCookieConsent();
 
-  if (!withConsent) return null;
+  if (!isConsentViewing) return null;
 
   return (
-    <AskCookie
-      ButtonComponent={Button}
-      disableButtonStyles
-      debug
-      customButtonProps={{ style: { margin: "1rem" } }}
-    >
-      This website uses cookies to enhance the user experience.
-    </AskCookie>
+    <ThemeProvider theme={theme}>
+      <AskCookie
+        disableButtonStyles
+        enableDeclineButton
+        ButtonComponent={Button}
+        cookieName={COOKIE_CONSENT_NAME}
+        buttonText={COOKIE_CONSENT_AGREE}
+        cookieValue={acceptValue.current}
+        declineCookieValue={COOKIE_DECLINED_VALUE}
+        declineButtonText={COOKIE_CONSENT_DECLINE}
+        style={{
+          background: theme.components?.Layout?.headerBg,
+          color: theme.components?.Layout?.headerColor,
+        }}
+        customButtonProps={{ style: { margin: "1rem" }, type: "primary" }}
+        customDeclineButtonProps={{ type: "text" }}
+      >
+        Do you accept cookies?
+      </AskCookie>
+    </ThemeProvider>
   );
 }
