@@ -32,6 +32,7 @@ export default function CookieConsent() {
         style={{
           background: theme.components?.Layout?.headerBg,
           color: theme.components?.Layout?.headerColor,
+          borderTop: `1px solid ${theme.token?.colorPrimary}`,
         }}
         customButtonProps={{ style: { margin: "1rem" }, type: "primary" }}
         customDeclineButtonProps={{ type: "text" }}
