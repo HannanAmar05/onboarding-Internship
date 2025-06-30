@@ -3,15 +3,13 @@ import { LayoutWithHeader } from "admiral";
 import { Outlet } from "react-router";
 import { SIDEBAR_ITEMS } from "@/commons/constants/sidebar";
 import { filterPermission } from "@/utils/permission";
-import { Flex, Grid, Typography } from "antd";
+import { Flex, Typography } from "antd";
 import { useSession } from "../_components/providers/session";
 
 const ProtectedLayout: FC = (): ReactElement => {
   const { session } = useSession();
   const userPermissions =
     session?.user?.roles?.map((role) => role.permissions?.map((perm) => perm.name)).flat() || [];
-
-  const { md } = Grid.useBreakpoint();
 
   const filteredItems = filterPermission(
     SIDEBAR_ITEMS,
@@ -29,7 +27,6 @@ const ProtectedLayout: FC = (): ReactElement => {
               level={4}
               style={{
                 marginBottom: 0,
-                color: md ? "white" : "black",
                 whiteSpace: "nowrap",
               }}
             >

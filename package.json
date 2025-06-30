@@ -23,6 +23,7 @@
     "dayjs": "^1.11.13",
     "js-cookie": "^3.0.5",
     "react": "^18.2.0",
+    "react-cookie-consent": "^9.0.0",
     "react-dom": "^18.2.0",
     "react-error-boundary": "^4.1.0",
     "react-lazily": "^0.9.2",

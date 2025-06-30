@@ -1,7 +1,7 @@
 import { ThemeProvider as AdmiralThemeProvider, TThemeConfig } from "admiral";
 import { Link, Outlet } from "react-router";
 
-const theme: TThemeConfig = {
+export const theme: TThemeConfig = {
   components: {
     Menu: {
       itemColor: "#B5F5EC",
