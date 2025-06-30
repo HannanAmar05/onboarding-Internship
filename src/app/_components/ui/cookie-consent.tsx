@@ -21,6 +21,7 @@ export default function CookieConsent() {
   return (
     <ThemeProvider theme={theme}>
       <AskCookie
+        disableStyles
         disableButtonStyles
         enableDeclineButton
         ButtonComponent={Button}
@@ -29,12 +30,32 @@ export default function CookieConsent() {
         cookieValue={acceptValue.current}
         declineCookieValue={COOKIE_DECLINED_VALUE}
         declineButtonText={COOKIE_CONSENT_DECLINE}
+        location=""
         style={{
           background: theme.components?.Layout?.headerBg,
           color: theme.components?.Layout?.headerColor,
-          borderTop: `1px solid ${theme.token?.colorPrimary}`,
+          border: `1px solid ${theme.token?.colorPrimary}`,
+          left: "unset",
+          right: "1rem",
+          bottom: "1rem",
+          width: "max-content",
+          position: "fixed",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "1rem",
+          gap: "1rem",
+          maxWidth: "calc(100vw - 2rem)",
+          borderRadius: "0.375rem",
         }}
-        customButtonProps={{ style: { margin: "1rem" }, type: "primary" }}
+        customButtonWrapperAttributes={{
+          style: {
+            flexShrink: "0",
+            gap: "0.5rem",
+            display: "flex",
+          },
+        }}
+        customButtonProps={{ type: "primary" }}
         customDeclineButtonProps={{ type: "text" }}
       >
         Do you accept cookies?
