@@ -1,2 +1,2 @@
 [develop]
-dot_sandbox ansible_host=35.198.212.121
+dot_semeru ansible_host=semeru.devnstg.com ansible_port=37470
