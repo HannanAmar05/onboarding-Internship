@@ -1,12 +1,10 @@
 ---
 - name: Deploy environment to sandbox
-  hosts: dot_sandbox
-  remote_user: ajeng
-  become: true
-  become_user: project
+  hosts: develop
+  remote_user: project
   gather_facts: false
   vars:
-    working_directory: "/var/www/project/boilerplates/vite-admiral"
+    working_directory: "/var/www/project/boilerplates/vite-admiral-blrplt.devnstg.com"
     stack_name: "boilerplates-vite-admiral"
     container_version: "{{ lookup('env', 'CI_COMMIT_SHORT_SHA') }}"
     container_image: "registry.gitlab.dot.co.id/playground/boilerplates/vite-admiral:develop{{ container_version }}"
@@ -21,7 +19,7 @@
 
     - name: Waiting deployment ready
       ansible.builtin.uri:
-        url: https://vite-admiral-blrplt.dot.co.id
+        url: https://vite-admiral-blrplt.devnstg.com
         validate_certs: false
       register: result
       until: "result.status == 200"
