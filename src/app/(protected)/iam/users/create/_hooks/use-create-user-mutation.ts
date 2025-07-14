@@ -6,6 +6,6 @@ export const useCreateUserMutation = () => {
   return useMutation({
     mutationKey: [QUERY_KEY.USERS.CREATE],
     mutationFn: createUser,
-    meta: { invalidatesQuery: [QUERY_KEY.USERS.LIST] },
+    meta: { invalidateQueries: [QUERY_KEY.USERS.LIST] },
   });
 };

@@ -3,9 +3,9 @@ import { QueryClient, InvalidateQueryFilters, MutationCache } from "@tanstack/re
 export const queryClient = new QueryClient({
   mutationCache: new MutationCache({
     onSuccess(_data, _variables, _context, mutation) {
-      if (mutation.meta?.invalidatesQuery) {
+      if (mutation.meta?.invalidateQueries) {
         queryClient.invalidateQueries(
-          mutation.meta.invalidatesQuery as InvalidateQueryFilters<readonly unknown[]>,
+          mutation.meta.invalidateQueries as InvalidateQueryFilters<readonly unknown[]>,
         );
       }
     },

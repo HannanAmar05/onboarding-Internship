@@ -6,7 +6,7 @@ const useDeleteFaq = () => {
   return useMutation({
     mutationKey: [QUERY_KEY.FAQ.DELETE],
     mutationFn: deleteFaq,
-    meta: { invalidatesQuery: [QUERY_KEY.FAQ.LIST] },
+    meta: { invalidateQueries: [QUERY_KEY.FAQ.LIST] },
   });
 };
 export default useDeleteFaq;

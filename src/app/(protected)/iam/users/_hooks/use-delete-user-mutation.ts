@@ -6,6 +6,6 @@ export const useDeleteUserMutation = () => {
   return useMutation({
     mutationKey: [QUERY_KEY.USERS.DELETE],
     mutationFn: deleteUser,
-    meta: { invalidatesQuery: [QUERY_KEY.USERS.LIST] },
+    meta: { invalidateQueries: [QUERY_KEY.USERS.LIST] },
   });
 };
