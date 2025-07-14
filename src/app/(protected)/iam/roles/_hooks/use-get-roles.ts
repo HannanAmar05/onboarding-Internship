@@ -1,12 +1,11 @@
 import { getRoles } from "@/api/role";
 import { TRoleGetRequest } from "@/api/role/type";
 import { useQuery } from "@/app/_hooks/request/use-query";
-
-export const queryKey = "get-roles";
+import { QUERY_KEY } from "@/commons/constants/query-key";
 
 export const useGetRoles = (params: TRoleGetRequest) => {
   return useQuery({
-    queryKey: [queryKey, params],
+    queryKey: [QUERY_KEY.ROLES.LIST, params],
     queryFn: () => getRoles(params),
   });
 };

@@ -1,3 +1,13 @@
-import { QueryClient } from "@tanstack/react-query";
+import { QueryClient, InvalidateQueryFilters, MutationCache } from "@tanstack/react-query";
 
-export const queryClient = new QueryClient();
+export const queryClient = new QueryClient({
+  mutationCache: new MutationCache({
+    onSuccess(_data, _variables, _context, mutation) {
+      if (mutation.meta?.invalidatesQuery) {
+        queryClient.invalidateQueries(
+          mutation.meta.invalidatesQuery as InvalidateQueryFilters<readonly unknown[]>,
+        );
+      }
+    },
+  }),
+});
