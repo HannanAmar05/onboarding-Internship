@@ -1,9 +1,9 @@
-import { QueryKey } from "../constants/query-key"
+import { QueryKey } from "../constants/query-key";
 
 declare module "@tanstack/react-query" {
-    interface Register {
-        mutationMeta: {
-            invalidateQueries: QueryKey[]
-        }
-    }
+  interface Register {
+    mutationMeta: {
+      invalidateQueries: QueryKey[];
+    };
+  }
 }

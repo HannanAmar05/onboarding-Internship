@@ -6,6 +6,6 @@ export const useDeleteRole = () => {
   return useMutation({
     mutationKey: [QUERY_KEY.ROLES.DELETE],
     mutationFn: deleteRole,
-    meta: {invalidateQueries: [QUERY_KEY.ROLES.LIST]},
+    meta: { invalidateQueries: [QUERY_KEY.ROLES.LIST] },
   });
 };
