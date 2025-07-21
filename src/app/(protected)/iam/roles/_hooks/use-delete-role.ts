@@ -1,11 +1,11 @@
 import { deleteRole } from "@/api/role";
 import { useMutation } from "@/app/_hooks/request/use-mutation";
-
-export const queryKey = "delete-role";
+import { QUERY_KEY } from "@/commons/constants/query-key";
 
 export const useDeleteRole = () => {
   return useMutation({
-    mutationKey: [queryKey],
+    mutationKey: [QUERY_KEY.ROLES.DELETE],
     mutationFn: deleteRole,
+    meta: { invalidateQueries: [QUERY_KEY.ROLES.LIST] },
   });
 };
