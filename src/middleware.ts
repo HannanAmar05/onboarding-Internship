@@ -1,48 +1,64 @@
 import { ROUTES } from "./commons/constants/routes";
-import { LoaderFunctionArgs, redirect } from "react-router";
-import { filterPermission } from "./utils/permission";
 import { PERMISSIONS } from "./commons/constants/permissions";
+import { registerMiddleware } from "./libs/react-router";
 import { SessionUser } from "./libs/localstorage";
+import { filterPermission } from "./utils/permission";
 
 const mappingRoutePermissions = [
-  {
-    path: ROUTES.dashboard,
-  },
-  {
-    path: ROUTES.iam.users.list,
-    permissions: [PERMISSIONS.USERS.READ_USERS],
-  },
+  { path: ROUTES.dashboard },
+  { path: ROUTES.iam.users.list, permissions: [PERMISSIONS.USERS.READ_USERS] },
 ];
 
-const mappingPublicRoutes = ["/auth/login", "/auth/oauth-callback"];
+const mappingPublicRoutes = [ROUTES.auth.login, ROUTES.auth.callback];
 
-export const middleware = async ({ request }: LoaderFunctionArgs) => {
-  const url = new URL(request.url);
-  const session = SessionUser.get();
-  const userPermissions =
-    session?.user?.roles?.map((role) => role.permissions.map((perm) => perm.name))?.flat() || [];
+registerMiddleware({
+  matcher: "^/$",
+  handler: () => {
+    const session = SessionUser.get();
+    if (session) {
+      return { redirect: ROUTES.dashboard };
+    }
+    return { redirect: ROUTES.auth.login };
+  },
+});
 
-  const pathname = url.pathname;
+registerMiddleware({
+  matcher: ".*",
+  handler: (request) => {
+    const url = new URL(request.url);
+    const pathname = url.pathname;
+    const session = SessionUser.get();
 
-  const allowedPermissions = filterPermission(
-    mappingRoutePermissions,
-    (route) =>
-      (session && route.path === pathname && route.permissions
-        ? route.permissions.some((permission) => permission ?? userPermissions?.some(permission))
-        : true) || false,
-  );
+    const isPublicRoute = mappingPublicRoutes.some(
+      (route) => pathname === route || pathname.startsWith(`${route}/`),
+    );
 
-  if (mappingPublicRoutes.includes(pathname)) {
-    return null;
-  }
+    if (!isPublicRoute && !session) {
+      const redirectTo = `${ROUTES.auth.login}?redirect=${encodeURIComponent(pathname)}`;
+      return { redirect: redirectTo };
+    }
 
-  if (!session) {
-    return redirect(ROUTES.auth.login);
-  }
+    if (isPublicRoute && session) {
+      return { redirect: ROUTES.dashboard };
+    }
 
-  if (allowedPermissions.length === 0) {
-    return redirect(ROUTES.dashboard);
-  }
+    if (session) {
+      const userPermissions: string[] =
+        session?.user?.roles
+          ?.map((role) => role.permissions.map((perm: { name: string }) => perm.name))
+          ?.flat() || [];
 
-  return null;
-};
+      const rulesForPath = mappingRoutePermissions.filter((rule) => rule.path === pathname);
+      const allowedRules = filterPermission(rulesForPath, (rule) => {
+        if (!rule.permissions || rule.permissions.length === 0) return true;
+        return rule.permissions.some((perm) => userPermissions.includes(perm));
+      });
+
+      if (rulesForPath.length > 0 && allowedRules.length === 0) {
+        return { redirect: ROUTES.dashboard };
+      }
+    }
+
+    return;
+  },
+});

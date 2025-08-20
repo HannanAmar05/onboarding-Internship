@@ -1,5 +1,3 @@
-"use client";
-
 import { Col, Row, message } from "antd";
 import { Page } from "admiral";
 

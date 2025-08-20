@@ -1,5 +1,3 @@
-"use client";
-
 import { Button, Flex, message } from "antd";
 import {
   DeleteOutlined,
@@ -49,10 +47,7 @@ export const Component = () => {
             <Link to={urlParser(ROUTES.iam.permissions.detail, { id: record?.id })}>
               <Button type="link" icon={<EyeOutlined style={{ color: "green" }} />} />
             </Link>
-            <Guard
-              permissions={[PERMISSIONS.PERMISSIONS.DELETE_PERMISSIONS]}
-              fallback={<></>}
-            >
+            <Guard permissions={[PERMISSIONS.PERMISSIONS.DELETE_PERMISSIONS]} fallback={<></>}>
               <Button
                 type="link"
                 icon={<DeleteOutlined style={{ color: "red" }} />}
@@ -66,10 +61,7 @@ export const Component = () => {
                 }}
               />
             </Guard>
-            <Guard
-              permissions={[PERMISSIONS.PERMISSIONS.UPDATE_PERMISSIONS]}
-              fallback={<></>}
-            >
+            <Guard permissions={[PERMISSIONS.PERMISSIONS.UPDATE_PERMISSIONS]} fallback={<></>}>
               <Link to={`/iam/permissions/${record?.id}/update`}>
                 <Button type="link" icon={<EditOutlined />} />
               </Link>
@@ -92,11 +84,16 @@ export const Component = () => {
   ];
 
   return (
-    <Page title="Permissions" breadcrumbs={breadcrumbs} topActions={
-      <Guard permissions={[PERMISSIONS.PERMISSIONS.CREATE_PERMISSIONS]} fallback={<></>}>
-        <TopAction />
-      </Guard>
-    } noStyle>
+    <Page
+      title="Permissions"
+      breadcrumbs={breadcrumbs}
+      topActions={
+        <Guard permissions={[PERMISSIONS.PERMISSIONS.CREATE_PERMISSIONS]} fallback={<></>}>
+          <TopAction />
+        </Guard>
+      }
+      noStyle
+    >
       <ActionTable
         onSearch={(value) => setFilters({ search: value })}
         searchValue={filters.search}

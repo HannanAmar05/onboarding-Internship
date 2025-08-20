@@ -1,5 +1,3 @@
-"use client";
-
 import { Page } from "admiral";
 import { Col, Row, message } from "antd";
 import { useUpdateUserMutation } from "./_hooks/use-update-user-mutation";

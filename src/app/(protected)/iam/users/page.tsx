@@ -1,5 +1,3 @@
-"use client";
-
 import { Page } from "admiral";
 import { Button, Flex, message } from "antd";
 import {
@@ -163,11 +161,16 @@ const Component = () => {
   ];
 
   return (
-    <Page title="Users" breadcrumbs={breadcrumbs} topActions={
-      <Guard permissions={[PERMISSIONS.USERS.CREATE_USERS]} fallback={<></>}>
-        <TopAction />
-      </Guard>
-    } noStyle>
+    <Page
+      title="Users"
+      breadcrumbs={breadcrumbs}
+      topActions={
+        <Guard permissions={[PERMISSIONS.USERS.CREATE_USERS]} fallback={<></>}>
+          <TopAction />
+        </Guard>
+      }
+      noStyle
+    >
       <Datatable
         onChange={handleChange}
         rowKey="id"

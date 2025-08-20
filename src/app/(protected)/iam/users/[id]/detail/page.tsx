@@ -1,5 +1,3 @@
-"use client";
-
 import { Page, Section } from "admiral";
 import { Button, Descriptions, Flex, message } from "antd";
 import { useUserQuery } from "../_hooks/use-user-query";
@@ -38,10 +36,7 @@ export const Component = () => {
     <Page
       topActions={
         <Flex gap={10}>
-          <Guard
-            permissions={[PERMISSIONS.USERS.DELETE_USERS]}
-            fallback={<></>}
-          >
+          <Guard permissions={[PERMISSIONS.USERS.DELETE_USERS]} fallback={<></>}>
             <Button
               htmlType="button"
               onClick={() => {

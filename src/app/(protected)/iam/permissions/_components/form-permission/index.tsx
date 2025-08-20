@@ -1,5 +1,3 @@
-"use client";
-
 import { FC } from "react";
 import { Button, Form, Input } from "antd";
 import { FormProps } from "antd/lib";

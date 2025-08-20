@@ -1,16 +1,12 @@
 import { createRoot } from "react-dom/client";
 import { StrictMode } from "react";
-import { createBrowserRouter, RouteObject, RouterProvider } from "react-router";
-import {
-  add404PageToRoutesChildren,
-  addErrorElementToRoutes,
-  convertPagesToRoute,
-} from "./libs/react-router/file-based-routing";
-import "antd/dist/reset.css";
-import { middleware } from "./middleware";
-import { ReactQueryProvider } from "./libs/react-query/react-query-provider";
+import { createBrowserRouter, RouterProvider } from "react-router";
 import * as Sentry from "@sentry/react";
 import { env } from "./libs/env";
+import { ReactQueryProvider } from "./libs/react-query/react-query-provider";
+import { createRoutesFromFiles } from "./libs/react-router";
+import "antd/dist/reset.css";
+import "./middleware.ts";
 
 Sentry.init({
   dsn: env.VITE_SENTRY_DSN,
@@ -19,22 +15,13 @@ Sentry.init({
   sendDefaultPii: true,
 });
 
-const files = import.meta.glob("./app/**/*(page|layout).tsx");
+const pageFiles = import.meta.glob("./app/**/*(page|layout).tsx");
 const errorFiles = import.meta.glob("./app/**/*error.tsx");
 const notFoundFiles = import.meta.glob("./app/**/*404.tsx");
 const loadingFiles = import.meta.glob("./app/**/*loading.tsx");
 
-const routes = convertPagesToRoute(files, loadingFiles) as RouteObject;
-addErrorElementToRoutes(errorFiles, routes);
-add404PageToRoutesChildren(notFoundFiles, routes);
-
-const router = createBrowserRouter([
-  {
-    ...routes,
-    loader: middleware,
-    shouldRevalidate: () => true,
-  },
-]);
+const routes = createRoutesFromFiles(pageFiles, errorFiles, notFoundFiles, loadingFiles);
+const router = createBrowserRouter([routes]);
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
