@@ -18,7 +18,6 @@ include:
     DOCKER_IMAGE_NAME: ${DOT_HARBOR_HOST}/${HARBOR_PROJECT}/open-api-generator/backend-api
   before_script:
     - docker login -u ${DOT_HARBOR_USERNAME} -p ${DOT_HARBOR_PASSWORD} ${DOT_HARBOR_HOST}
-
   script:
     - cp $DOTENV_FILE_PATH .env.local
     - docker build
