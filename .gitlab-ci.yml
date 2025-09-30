@@ -15,7 +15,7 @@ include:
   image: docker:20.10
   tags: [cli]
   variables:
-    DOCKER_IMAGE_NAME: ${DOT_HARBOR_HOST}/${HARBOR_PROJECT}/open-api-generator/backend-api
+    DOCKER_IMAGE_NAME: ${DOT_HARBOR_HOST}/${HARBOR_PROJECT}/vite-admiral
   before_script:
     - docker login -u ${DOT_HARBOR_USERNAME} -p ${DOT_HARBOR_PASSWORD} ${DOT_HARBOR_HOST}
   script:
@@ -43,7 +43,7 @@ build_mr:docker_image:
     - cp "$DOTENV_DEVELOP" .env.local
     - docker build
         --progress plain
-        --tag "${CI_REGISTRY_IMAGE}:${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}_mr"
+        --tag "${DOCKER_IMAGE_NAME}:${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}_mr"
         --file Dockerfile
         .
 
