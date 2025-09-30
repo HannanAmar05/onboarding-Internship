@@ -7,7 +7,7 @@
     working_directory: "/var/www/project/boilerplates/vite-admiral-blrplt.devnstg.com"
     stack_name: "boilerplates-vite-admiral"
     container_version: "{{ lookup('env', 'CI_COMMIT_SHORT_SHA') }}"
-    container_image: "registry.gitlab.dot.co.id/playground/boilerplates/vite-admiral:develop{{ container_version }}"
+    container_image: "hrbr.devnstg.com/boilerplates/vite-admiral:develop{{ container_version }}"
 
   tasks:
     - name: Update service docker image

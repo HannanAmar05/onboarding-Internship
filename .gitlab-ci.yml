@@ -10,22 +10,23 @@ include:
       sonar-project-key: playground_boilerplates_vite-admiral_d40f7698-bcac-4f02-b16a-f872446bf1df
       sonar-project-name: dot-boilerplate-vite-admiral
 
-
 .build:docker_image:
   stage: build
   image: docker:20.10
-  tags: [dot]
+  tags: [cli]
+  variables:
+    DOCKER_IMAGE_NAME: ${DOT_HARBOR_HOST}/${HARBOR_PROJECT}/open-api-generator/backend-api
   before_script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker login -u ${DOT_HARBOR_USERNAME} -p ${DOT_HARBOR_PASSWORD} ${DOT_HARBOR_HOST}
   script:
     - cp $DOTENV_FILE_PATH .env.local
     - docker build
       --progress plain
-      --tag ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}${CI_COMMIT_SHORT_SHA}
-      --tag ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}
+      --tag ${DOCKER_IMAGE_NAME}:${CI_COMMIT_BRANCH}${CI_COMMIT_SHORT_SHA}
+      --tag ${DOCKER_IMAGE_NAME}:${CI_COMMIT_BRANCH}
       .
-    - docker push ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}${CI_COMMIT_SHORT_SHA}
-    - docker push ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}
+    - docker push ${DOCKER_IMAGE_NAME}:${CI_COMMIT_BRANCH}${CI_COMMIT_SHORT_SHA}
+    - docker push ${DOCKER_IMAGE_NAME}:${CI_COMMIT_BRANCH}
 
 build_develop:docker_image:
   extends: .build:docker_image
@@ -49,7 +50,7 @@ build_mr:docker_image:
 deploy_develop:docker:
   stage: deploy
   image: dotindonesia/ansible:2.13.10
-  tags: [dot]
+  tags: [ansible]
   rules:
     - if: $CI_COMMIT_BRANCH == "develop"
   environment:
