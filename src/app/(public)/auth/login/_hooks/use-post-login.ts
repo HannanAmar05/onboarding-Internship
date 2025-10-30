@@ -19,7 +19,15 @@ export const usePostLogin = (): UseMutationResult<
     onSuccess: (res) => {
       SessionUser.set({ user: res.data.user });
       SessionToken.set(res.data);
-      navigate(0);
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      const redirect = urlParams.get("redirect");
+
+      if (redirect) {
+        navigate(redirect);
+      }else {
+        navigate(0);
+      }
     },
     onError: (error) => {
       notification.error({
