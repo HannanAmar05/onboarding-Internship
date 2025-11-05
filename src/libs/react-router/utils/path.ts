@@ -22,7 +22,25 @@ export function getRouteSegmentsFromFilePath(
     .filter((segment) => !segment.startsWith("(index)") && !segment.startsWith("_"))
     .map((segment) => parseSegment(segment));
 
-  return buildSegmentPath(segments[0], segments, actualTransformer);
+  // Normalize segments: if an optional group (e.g., "create?") is followed by the
+  // same concrete segment (e.g., "create"), drop the optional one so the path
+  // becomes "/.../create" instead of "/.../create?/create".
+  const normalizedSegments: string[] = [];
+  for (let i = 0; i < segments.length; i++) {
+    const current = segments[i];
+    const next = segments[i + 1];
+
+    const currentBase = current?.replace(/\?$/, "");
+    const nextBase = next?.replace(/\?$/, "");
+
+    if (current?.endsWith("?") && next && currentBase === nextBase) {
+      continue; // skip optional duplicate
+    }
+
+    normalizedSegments.push(current);
+  }
+
+  return buildSegmentPath(normalizedSegments[0], normalizedSegments, actualTransformer);
 }
 
 /**

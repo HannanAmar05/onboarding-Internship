@@ -3,6 +3,7 @@ import type { Middleware } from "./types/middleware";
 import { addErrorElementToRoutes } from "./handlers/error";
 import { add404PageToRoutesChildren } from "./handlers/not-found";
 import { convertPagesToRoute } from "./transformers/page";
+import { applyRouteLoadingFallbacks } from "./handlers/loading";
 import { registerMiddleware } from "./utils/middleware";
 
 /**
@@ -23,6 +24,9 @@ export function createRoutesFromFiles(
   const routes = convertPagesToRoute(pageFiles, loadingFiles) as RouteObject;
   addErrorElementToRoutes(errorFiles, routes);
   add404PageToRoutesChildren(notFoundFiles, routes);
+
+  // Ensure each route is wrapped with Suspense using the nearest LoadingComponent
+  applyRouteLoadingFallbacks(routes);
 
   return routes;
 }

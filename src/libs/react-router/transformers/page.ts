@@ -12,21 +12,49 @@ function findMatchingLoadingComponent(
   filePath: string,
   loadingFiles: Record<string, () => Promise<unknown>>,
 ) {
-  // Define loading paths in order of precedence
-  const loadingPaths = [
-    filePath.replace(/(page|layout)\.tsx$/, "loading.tsx"), // Local
-    filePath.match(/\([^/]+\//) ? `/${filePath.match(/\([^/]+\//)?.[0]}loading.tsx` : null, // Group
-    "./app/loading.tsx", // Global
-  ].filter(Boolean);
+  // Normalize helper to try both with and without leading './'
+  const tryKeys = (key: string): (() => Promise<unknown>) | undefined => {
+    if (loadingFiles[key]) return loadingFiles[key];
+    const alt = key.startsWith("./") ? key.slice(2) : `./${key}`;
+    if (loadingFiles[alt]) return loadingFiles[alt];
+    // Fallback: find by suffix to survive prefix differences
+    const suffixes = [key.replace(/^\.\//, ""), alt.replace(/^\.\//, "")];
+    for (const k of Object.keys(loadingFiles)) {
+      if (suffixes.some((s) => k.endsWith(s))) {
+        return loadingFiles[k];
+      }
+    }
+    return undefined;
+  };
 
-  // Find the first matching loading file
-  for (const path of loadingPaths) {
-    if (path && loadingFiles[path]) {
-      return lazy(loadingFiles[path] as LoadingModule);
+  // Local candidate (same directory as the page/layout)
+  const localKey = filePath.replace(/(page|layout)\.tsx$/, "loading.tsx");
+  const localMod = tryKeys(localKey);
+  if (localMod) {
+    return lazy(localMod as LoadingModule);
+  }
+
+  // Group-level candidates: for each '(group)' directory in the path,
+  // check for './app/.../(group)/loading.tsx' from nearest to farthest
+  const groupCandidates: string[] = [];
+  const parts = filePath.split("/");
+  for (let i = parts.length - 1; i >= 0; i--) {
+    if (/^\([^/]+\)$/.test(parts[i])) {
+      const prefix = parts.slice(0, i + 1).join("/");
+      const candidate = `${prefix}/loading.tsx`;
+      groupCandidates.push(candidate);
+    }
+  }
+  for (const candidate of groupCandidates) {
+    const mod = tryKeys(candidate);
+    if (mod) {
+      return lazy(mod as LoadingModule);
     }
   }
 
-  return undefined;
+  // Global fallback
+  const globalMod = tryKeys("./app/loading.tsx");
+  return globalMod ? lazy(globalMod as LoadingModule) : undefined;
 }
 
 /**
