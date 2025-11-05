@@ -61,17 +61,11 @@ export function buildSegmentPath(
 
   const nextIndex = index + 1;
 
-  // Handle different segment types
-  if (segment.startsWith(":")) {
-    // Dynamic routes
+  if (!segment.startsWith(":")) {
+    entries.push(segment);
+  } else {
     const lastEntry = entries.pop() || "";
     entries.push(`${lastEntry}/${segment}`);
-  } else if (segment.endsWith("?")) {
-    // Route groups - include as empty strings to establish hierarchy without URL segments
-    entries.push("");
-  } else {
-    // Regular path segments
-    entries.push(segment);
   }
 
   return buildSegmentPath(firstSegment, segments, transformer, entries, nextIndex);

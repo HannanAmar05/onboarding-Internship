@@ -16,12 +16,7 @@ export function createRoute(args: {
 }): ExtendedRouteObject {
   const [current, ...rest] = args.segments;
   const [cleanPath, pageType] = current.split(PATH_SEPARATOR);
-  const route: ExtendedRouteObject = {};
-
-  // Don't set path for empty strings (route groups) - they create pathless routes
-  if (cleanPath !== "") {
-    route.path = cleanPath;
-  }
+  const route: ExtendedRouteObject = { path: cleanPath };
 
   // Handle page or layout routes
   if (pageType === "page" || pageType === "layout") {
