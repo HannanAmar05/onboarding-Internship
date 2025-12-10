@@ -1,5 +1,7 @@
 import { PATH_SEPARATOR } from "../types/route";
 
+export const GROUP_PREFIX = "GROUP:";
+
 /**
  * Processes a file path to generate route segments, handling various routing patterns.
  *
@@ -16,31 +18,21 @@ export function getRouteSegmentsFromFilePath(
 
   const actualTransformer = transformer || defaultTransformer;
 
-  const segments = filePath
+  const parsedSegments = filePath
     .replace("/app", "")
     .split("/")
     .filter((segment) => !segment.startsWith("(index)") && !segment.startsWith("_"))
     .map((segment) => parseSegment(segment));
 
-  // Normalize segments: if an optional group (e.g., "create?") is followed by the
-  // same concrete segment (e.g., "create"), drop the optional one so the path
-  // becomes "/.../create" instead of "/.../create?/create".
-  const normalizedSegments: string[] = [];
-  for (let i = 0; i < segments.length; i++) {
-    const current = segments[i];
-    const next = segments[i + 1];
+  const fileSegment = parsedSegments.pop();
+  if (!fileSegment) return [];
 
-    const currentBase = current?.replace(/\?$/, "");
-    const nextBase = next?.replace(/\?$/, "");
+  const normalizedSegments = normalizeRouteSegments(parsedSegments);
 
-    if (current?.endsWith("?") && next && currentBase === nextBase) {
-      continue; // skip optional duplicate
-    }
+  const lastSegment = normalizedSegments.pop() || "";
+  const finalSegment = actualTransformer(fileSegment, lastSegment);
 
-    normalizedSegments.push(current);
-  }
-
-  return buildSegmentPath(normalizedSegments[0], normalizedSegments, actualTransformer);
+  return [...normalizedSegments, finalSegment];
 }
 
 /**
@@ -48,45 +40,27 @@ export function getRouteSegmentsFromFilePath(
  */
 function parseSegment(segment: string): string {
   if (segment.startsWith(".")) return "/";
-  if (segment.startsWith("(")) return segment.replace(/[()]/g, "") + "?";
+  if (segment.startsWith("(")) return `${GROUP_PREFIX}${segment.replace(/[()]/g, "")}`;
   if (segment.startsWith("[...")) return "*";
   if (segment.startsWith("[")) return segment.replace("[", ":").replace("]", "");
   return segment;
 }
 
-/**
- * Builds segment path using a transformer function.
- */
-export function buildSegmentPath(
-  firstSegment: string,
-  segments: string[],
-  transformer: (seg: string, prev: string) => string,
-  entries: string[] = [],
-  index = 0,
-): string[] {
-  if (index >= segments.length) {
-    return entries;
-  }
+function normalizeRouteSegments(segments: string[]): string[] {
+  return segments.reduce<string[]>((acc, segment) => {
+    const previous = acc[acc.length - 1];
+    const isDynamic = segment.startsWith(":");
+    const shouldMergeWithPrevious = isDynamic && acc.length > 0 && !isRouteGroup(previous);
 
-  const segment = segments[index];
-  const isLastSegment = index === segments.length - 1;
+    if (shouldMergeWithPrevious) {
+      const lastEntry = acc.pop() || "";
+      acc.push(`${lastEntry}/${segment}`);
+      return acc;
+    }
 
-  if (isLastSegment) {
-    const lastEntry = entries.pop() || "";
-    entries.push(transformer(segment, lastEntry));
-    return entries;
-  }
-
-  const nextIndex = index + 1;
-
-  if (!segment.startsWith(":")) {
-    entries.push(segment);
-  } else {
-    const lastEntry = entries.pop() || "";
-    entries.push(`${lastEntry}/${segment}`);
-  }
-
-  return buildSegmentPath(firstSegment, segments, transformer, entries, nextIndex);
+    acc.push(segment);
+    return acc;
+  }, []);
 }
 
 /**
@@ -94,4 +68,12 @@ export function buildSegmentPath(
  */
 export function isDynamicRoute(path: string): boolean {
   return path.startsWith(":");
+}
+
+export function isRouteGroup(segment: string | undefined): segment is string {
+  return !!segment && segment.startsWith(GROUP_PREFIX);
+}
+
+export function stripRouteGroup(segment: string): string {
+  return segment.replace(GROUP_PREFIX, "");
 }

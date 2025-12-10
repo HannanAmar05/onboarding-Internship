@@ -1,13 +1,25 @@
-import { LazyExoticComponent, JSX } from "react";
+import { JSX, LazyExoticComponent } from "react";
 import { ActionFunction, LoaderFunction } from "react-router";
-import { ExtendedRouteObject, PATH_SEPARATOR, DEFAULT_FALLBACK } from "../types/route";
-import { isDynamicRoute } from "../utils/path";
+import { DEFAULT_FALLBACK, ExtendedRouteObject, PATH_SEPARATOR } from "../types/route";
+import { isDynamicRoute, isRouteGroup } from "../utils/path";
+
+function joinIds(parentId: string | undefined, childId: string | undefined): string | undefined {
+  if (!childId) return parentId;
+
+  const trimmedParent = parentId && parentId !== "/" ? parentId.replace(/\/+$/, "") : "";
+  const trimmedChild = childId.replace(/^\/+/, "");
+
+  if (!trimmedParent) return trimmedChild;
+
+  return `${trimmedParent}/${trimmedChild}`;
+}
 
 /**
  * Creates a new route configuration based on path segments and components.
  */
 export function createRoute(args: {
   segments: string[];
+  parentId?: string;
   PageComponent: LazyExoticComponent<() => JSX.Element>;
   LoadingComponent?: LazyExoticComponent<() => JSX.Element>;
   loader?: LoaderFunction;
@@ -15,8 +27,17 @@ export function createRoute(args: {
   guard?: () => Promise<boolean>;
 }): ExtendedRouteObject {
   const [current, ...rest] = args.segments;
-  const [cleanPath, pageType] = current.split(PATH_SEPARATOR);
-  const route: ExtendedRouteObject = { path: cleanPath };
+  const [rawPath, pageType] = current.split(PATH_SEPARATOR);
+  const isGroupSegment = isRouteGroup(rawPath);
+  const cleanPath = isGroupSegment ? undefined : rawPath;
+  const currentKey = rawPath || "root";
+  const composedId = isGroupSegment ? joinIds(args.parentId, currentKey) : undefined;
+
+  const route: ExtendedRouteObject = cleanPath ? { path: cleanPath } : {};
+
+  if (isGroupSegment) {
+    route.id = composedId;
+  }
 
   // Handle page or layout routes
   if (pageType === "page" || pageType === "layout") {
@@ -33,7 +54,9 @@ export function createRoute(args: {
   }
 
   if (rest.length > 0) {
-    handleNestedRoutes(route, rest, args);
+    const nextParentId = isGroupSegment ? composedId : joinIds(args.parentId, cleanPath || rawPath);
+
+    handleNestedRoutes(route, rest, { ...args, parentId: nextParentId });
   }
 
   return route;
@@ -47,6 +70,7 @@ function handleNestedRoutes(
   rest: string[],
   args: {
     segments: string[];
+    parentId?: string;
     PageComponent: LazyExoticComponent<() => JSX.Element>;
     LoadingComponent?: LazyExoticComponent<() => JSX.Element>;
     loader?: LoaderFunction;

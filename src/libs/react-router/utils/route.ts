@@ -2,6 +2,22 @@ import { JSX } from "react";
 import { RouteObject } from "react-router";
 import { ExtendedRouteObject, RouteUpdater } from "../types/route";
 
+function getRouteKey(route: RouteObject): string | undefined {
+  return route.path ?? route.id;
+}
+
+function matchesSegment(routeKey: string | undefined, segment: string | undefined): boolean {
+  if (!routeKey || !segment) return false;
+
+  const normalizedKey = routeKey.replace(/^\/+/, "");
+  const normalizedSegment = segment.replace(/^\/+/, "");
+
+  if (normalizedKey === normalizedSegment) return true;
+
+  const keyTail = normalizedKey.split("/").pop();
+  return keyTail === normalizedSegment;
+}
+
 /**
  * Recursively traverses and updates routes based on segment paths.
  */
@@ -25,7 +41,9 @@ export function setRoute(segments: string[], route: RouteObject, updater: RouteU
       );
     }
 
-    const childIndex = currentRoute.children.findIndex((child) => child.path === nextSegment);
+    const childIndex = currentRoute.children.findIndex((child) =>
+      matchesSegment(getRouteKey(child), nextSegment),
+    );
 
     if (childIndex === -1) {
       throw new Error(
@@ -44,8 +62,11 @@ export function mergeRoutes(
   target: ExtendedRouteObject,
   source: ExtendedRouteObject,
 ): ExtendedRouteObject {
-  if (target.path !== source.path) {
-    throw new Error(`Paths do not match: "${target.path}" and "${source.path}"`);
+  const targetKey = getRouteKey(target);
+  const sourceKey = getRouteKey(source);
+
+  if (targetKey !== sourceKey) {
+    throw new Error(`Paths do not match: "${targetKey}" and "${sourceKey}"`);
   }
 
   // Initialize children array if needed
@@ -229,8 +250,9 @@ export function mergeChildRoutes(target: ExtendedRouteObject, source: ExtendedRo
   }
 
   source.children.forEach((sourceChild) => {
+    const sourceKey = getRouteKey(sourceChild);
     const matchingChild = target.children!.find(
-      (targetChild) => targetChild.path === sourceChild.path,
+      (targetChild) => getRouteKey(targetChild) === sourceKey,
     );
 
     if (matchingChild) {
@@ -284,6 +306,8 @@ function set404NonPage(routes: RouteObject, notFoundElement: JSX.Element): void 
     routes.path &&
     routes.children &&
     routes.children.length > 0 &&
+    !routes.path.startsWith(":") &&
+    !routes.path.startsWith("*") &&
     !routes.path.includes("?") &&
     !routes.path.includes("/") &&
     !routes.children.some((child) => child.index)
