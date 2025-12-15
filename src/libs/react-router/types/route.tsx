@@ -12,6 +12,7 @@ import {
  */
 export interface PageModuleExports {
   default: () => JSX.Element;
+  permissions?: string[] | string[][];
   loader?: LoaderFunction;
   action?: ActionFunction;
 }
