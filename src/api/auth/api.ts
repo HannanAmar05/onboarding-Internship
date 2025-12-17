@@ -2,8 +2,7 @@ import { api } from "@/libs/axios/api";
 import { TLoginOidcParam, TLoginParam, TLoginResponse } from "./type";
 import { PERMISSIONS } from "@/commons/constants/permissions";
 
-export const postLogin = async (payload: TLoginParam): Promise<TLoginResponse> => {
-  console.log("teriggered", payload);
+export const postLogin = async (_payload: TLoginParam): Promise<TLoginResponse> => {
   const data = Promise.resolve({
     data: {
       access_token: "access_token",
@@ -46,7 +45,6 @@ export const postLogin = async (payload: TLoginParam): Promise<TLoginResponse> =
   //  method: "POST",
   //  data: payload,
   //});
-  console.log(data);
   return data;
 };
 

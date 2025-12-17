@@ -10,7 +10,7 @@ type Session = {
   signin: (payload: TLoginOidcParam) => void;
   signout: () => void;
   session?: {
-    access_token: string;
+    access_token?: string;
     refresh_token: string;
     user?: TUserItem;
   };
@@ -18,8 +18,8 @@ type Session = {
 };
 
 const SessionContext = createContext<Session>({
-  signin: () => {},
-  signout: () => {},
+  signin: () => { },
+  signout: () => { },
   session: undefined,
   status: undefined,
 });

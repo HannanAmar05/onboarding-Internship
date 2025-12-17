@@ -9,3 +9,10 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+interface Window {
+  __REACT_GRAB__?: {
+    activate: () => void;
+    deactivate: () => void;
+  };
+}
