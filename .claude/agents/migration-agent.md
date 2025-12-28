@@ -346,6 +346,23 @@ After migration, run `pnpm run build` to verify:
 -   All imports resolve correctly
 -   All types are properly defined
 
+## Equivalent Implementation Migration
+
+### 1. Data Fetching
+
+**Prototype Repo Pattern:**
+```javascript
+const allFaqsData = useGetData(allFaqs);
+```
+
+**Target Repo Pattern:**
+```typescript
+  const faqsQuery = useFaqsQuery({
+    ...pagination,
+    ...filters,
+  });
+```
+
 ## Example Scenario
 
 If the XML contains `src/app/(protected)/holidays/page.jsx`, you will:
