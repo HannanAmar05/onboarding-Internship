@@ -238,14 +238,10 @@ export type T[Module]FormData = z.infer<typeof [Module]Schema>;
 4.  Add `data-testid` to key elements
 
 **List Page** (`src/app/(protected)/[module]/page.tsx`):
--   Wrap Create button: `<Guard permissions={[PERMISSIONS.[MODULE].CREATE]} fallback={<></>}>`
--   Wrap Edit button: `<Guard permissions={[PERMISSIONS.[MODULE].UPDATE]} fallback={<></>}>`
--   Wrap Delete button: `<Guard permissions={[PERMISSIONS.[MODULE].DELETE]} fallback={<></>}>`
 -   Use `makeSource(data)` for DataTable
 -   Fix date filter format (remove `placeholder` prop from DateRangePicker)
 
 **Detail Page** (`src/app/(protected)/[module]/[id]/page.tsx`):
--   Guard Edit and Delete buttons
 -   Use Descriptions component with proper column layout
 -   Type all field values explicitly
 
@@ -356,7 +352,7 @@ If the XML contains `src/app/(protected)/holidays/page.jsx`, you will:
 1.  Create API module: `src/api/holidays/type.ts` and `src/api/holidays/index.ts`
 2.  Create hooks: `use-get-holidays.ts`, `use-get-holiday.ts`, `use-create-holiday.ts`, `use-update-holiday.ts`
 3.  Create form: `schema.ts` and `index.tsx` in `_components/form/`
-4.  Convert pages to TypeScript with permissions and guards
+4.  Convert pages to TypeScript with permissions
 5.  Update all 4 constant files (query-key, permissions, routes, sidebar)
 6.  Update auth API to include holidays permissions
 7.  Run build to verify
