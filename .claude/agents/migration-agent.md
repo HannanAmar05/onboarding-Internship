@@ -42,22 +42,22 @@ src/app/(protected)/[module-name]/
   ├── create/
   │   ├── page.tsx                    # Create page
   │   └── _hooks/
-  │       └── use-create-[module].ts # Create mutation hook
+  │       └── use-create-[module]-mutation.ts # Create mutation hook
   ├── [id]/
   │   ├── page.tsx                    # Detail page
   │   ├── update/
   │   │   ├── page.tsx                # Update page
   │   │   └── _hooks/
-  │   │       └── use-update-[module].ts
+  │   │       └── use-update-[module]-mutation.ts
   │   └── _hooks/
-  │       └── use-get-[module].ts    # Detail query hook
+  │       └── use-[module]-query.ts    # Detail query hook
   ├── _components/
   │   ├── form/
   │   │   ├── index.tsx              # Form component
   │   │   └── schema.ts              # Zod validation schema
   │   └── index.ts                   # Component exports
   └── _hooks/
-      └── use-get-[module]s.ts       # List query hook
+      └── use-[module]s-query.ts       # List query hook
 ```
 
 ## Instructions
@@ -73,7 +73,7 @@ First, read and analyze the XML file and existing codebase patterns. Then create
 
 2.  **Files to Create** (List each with path and purpose)
     -   API module files (type.ts, index.ts)
-    -   Hook files (query and mutation hooks)
+    -   Hook files (query and mutation hooks with standard naming: `use-[module]s-query.ts`, `use-create-[module]-mutation.ts`, etc.)
     -   Component files (form schema, form component)
     -   Page files (list, detail, create, update)
 
@@ -129,30 +129,30 @@ export type T[Module]DetailResponse = TResponseData<T[Module]>;
 
 #### B. Create Query Hooks
 
-**File: `src/app/(protected)/[module]/_hooks/use-get-[module]s.ts`**
+**File: `src/app/(protected)/[module]/_hooks/use-[module]s-query.ts`**
 ```typescript
 import { useQuery } from "@tanstack/react-query";
 import { get[Module]s } from "@/api/[module]";
 import { TFilter[Module] } from "@/api/[module]/type";
 import { QUERY_KEY } from "@/commons/constants/query-key";
 
-const useGet[Module]s = (params: TFilter[Module] = {}) => {
+const use[Module]sQuery = (params: TFilter[Module] = {}) => {
   return useQuery({
     queryKey: [QUERY_KEY.[MODULE].LIST, params],
     queryFn: () => get[Module]s(params),
   });
 };
 
-export default useGet[Module]s;
+export default use[Module]sQuery;
 ```
 
-**File: `src/app/(protected)/[module]/[id]/_hooks/use-get-[module].ts`**
+**File: `src/app/(protected)/[module]/[id]/_hooks/use-[module]-query.ts`**
 ```typescript
 import { useQuery } from "@tanstack/react-query";
 import { getDetail[Module] } from "@/api/[module]";
 import { QUERY_KEY } from "@/commons/constants/query-key";
 
-const useGet[Module] = (id: string) => {
+const use[Module]Query = (id: string) => {
   return useQuery({
     queryKey: [QUERY_KEY.[MODULE].DETAIL, id],
     queryFn: () => getDetail[Module]({ id }),
@@ -160,32 +160,32 @@ const useGet[Module] = (id: string) => {
   });
 };
 
-export default useGet[Module];
+export default use[Module]Query;
 ```
 
 #### C. Create Mutation Hooks
 
-**File: `src/app/(protected)/[module]/create/_hooks/use-create-[module].ts`**
+**File: `src/app/(protected)/[module]/create/_hooks/use-create-[module]-mutation.ts`**
 ```typescript
 import { create[Module] } from "@/api/[module]";
 import { useMutation } from "@/app/_hooks/request/use-mutation";
 
-const useCreate[Module] = () => {
+const useCreate[Module]Mutation = () => {
   return useMutation({
     mutationKey: ["create-[module]"],
     mutationFn: create[Module],
   });
 };
 
-export default useCreate[Module];
+export default useCreate[Module]Mutation;
 ```
 
-**File: `src/app/(protected)/[module]/[id]/update/_hooks/use-update-[module].ts`**
+**File: `src/app/(protected)/[module]/[id]/update/_hooks/use-update-[module]-mutation.ts`**
 ```typescript
 import { update[Module] } from "@/api/[module]";
 import { useMutation } from "@/app/_hooks/request/use-mutation";
 
-const useUpdate[Module] = () => {
+const useUpdate[Module]Mutation = () => {
   return useMutation({
     mutationKey: ["update-[module]"],
     mutationFn: ({ id, req }: { id: string; req: T[Module]Request }) =>
@@ -193,7 +193,7 @@ const useUpdate[Module] = () => {
   });
 };
 
-export default useUpdate[Module];
+export default useUpdate[Module]Mutation;
 ```
 
 #### D. Create Form Schema
@@ -233,7 +233,7 @@ export type T[Module]FormData = z.infer<typeof [Module]Schema>;
     ```
 3.  Use `isLoading` from useQuery (not `loading`):
     ```tsx
-    const { data, isLoading: loading } = useGet[Module]s(params);
+    const { data, isLoading: loading } = use[Module]sQuery(params);
     ```
 4.  Add `data-testid` to key elements
 
@@ -367,7 +367,7 @@ const allFaqsData = useGetData(allFaqs);
 
 If the XML contains `src/app/(protected)/holidays/page.jsx`, you will:
 1.  Create API module: `src/api/holidays/type.ts` and `src/api/holidays/index.ts`
-2.  Create hooks: `use-get-holidays.ts`, `use-get-holiday.ts`, `use-create-holiday.ts`, `use-update-holiday.ts`
+2.  Create hooks: `use-[module]s-query.ts`, `use-[module]-query.ts`, `use-create-[module]-mutation.ts`, `use-update-[module]-mutation.ts`
 3.  Create form: `schema.ts` and `index.tsx` in `_components/form/`
 4.  Convert pages to TypeScript with permissions
 5.  Update all 4 constant files (query-key, permissions, routes, sidebar)

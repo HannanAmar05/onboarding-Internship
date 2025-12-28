@@ -17,19 +17,19 @@ import { TFaq } from "@/api/example/type";
 import { ROUTES } from "@/commons/constants/routes";
 import { useFilter } from "@/app/_hooks/datatable/use-filter";
 
-import useGetFaqs from "./_hooks/use-get-faqs";
-import useDeleteFaq from "./_hooks/use-delete-faq";
+import useFaqsQuery from "./_hooks/use-faqs-query";
+import useDeleteFaqMutation from "./_hooks/use-delete-faq-mutation";
 import getFaqStatus from "./_utils/faq-tag";
 
 export const Component = () => {
   const { handleChange, pagination, filters } = useFilter();
 
-  const listQuery = useGetFaqs({
+  const faqsQuery = useFaqsQuery({
     ...pagination,
     ...filters,
   });
 
-  const deleteMutation = useDeleteFaq();
+  const deleteMutation = useDeleteFaqMutation();
 
   const columns: ColumnsType<TFaq> = [
     {
@@ -266,8 +266,8 @@ export const Component = () => {
         onChange={handleChange}
         rowKey="id"
         showRowSelection={true}
-        loading={listQuery.isLoading}
-        source={makeSource(listQuery.data)}
+        loading={faqsQuery.isLoading}
+        source={makeSource(faqsQuery.data)}
         columns={columns}
         search={filters.search}
       />

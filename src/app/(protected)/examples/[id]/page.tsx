@@ -5,17 +5,17 @@ import { DescriptionsProps } from "antd/lib";
 
 import { ROUTES } from "@/commons/constants/routes";
 
-import useGetDetailFaq from "./_hooks/use-get-detail-examples";
+import useFaqQuery from "./_hooks/use-faq-query";
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
-import useDeleteFaq from "../_hooks/use-delete-faq";
+import useDeleteFaqMutation from "../_hooks/use-delete-faq-mutation";
 import getFaqStatus from "../_utils/faq-tag";
 import { formatDate } from "@/utils/date-format";
 
 export const Component = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const detailQuery = useGetDetailFaq(id!);
-  const deleteMutation = useDeleteFaq();
+  const detailQuery = useFaqQuery(id!);
+  const deleteMutation = useDeleteFaqMutation();
   const data = detailQuery.data;
 
   const breadcrumbs = [

@@ -7,14 +7,14 @@ import { formatDate, formatStringToDate } from "@/utils/date-format";
 
 import FormFaq from "../../_components/form";
 import { TFAQFormData } from "../../_components/form/schema";
-import useGetDetailFaq from "../_hooks/use-get-detail-examples";
-import useUpdateFaq from "./_hooks/use-update-faq";
+import useFaqQuery from "../_hooks/use-faq-query";
+import useUpdateFaqMutation from "./_hooks/use-update-faq-mutation";
 
 export const Component = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const updateMutation = useUpdateFaq(id!);
-  const detailQuery = useGetDetailFaq(id!);
+  const updateMutation = useUpdateFaqMutation(id!);
+  const detailQuery = useFaqQuery(id!);
 
   const breadcrumbs = [
     {
