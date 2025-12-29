@@ -213,15 +213,31 @@ export type T[Module]FormData = z.infer<typeof [Module]Schema>;
 #### E. Create Form Component
 
 **File: `src/app/(protected)/[module]/_components/form/index.tsx`**
--   Convert JSX to TypeScript with proper prop types
--   Implement `useFormErrorHandling`:
-    ```tsx
-    const [form] = Form.useForm();
-    useFormErrorHandling(error, ({ key, message }) =>
-      form.setFields([{ name: key, errors: [message] }]),
-    );
+-   **CRITICAL TYPE DEFINITION**:
+    -   Define a **STANDALONE** form values type `T[Module]FormValues` directly in this file.
+    -   **DO NOT** extend or intersect `T[Module]Request` if it causes type mismatches (e.g., `Dayjs` vs `string`).
+    -   **ALWAYS** use `dayjs.Dayjs` for date fields in the form type, even if the API expects strings.
+    -   Structure:
+        ```typescript
+        export type T[Module]FormValues = {
+          // Explicitly define all fields needed for the form
+          field1: string;
+          date_field: dayjs.Dayjs; // Use Dayjs for form state
+          // ... all other fields
+        };
+        ```
+-   Convert JSX to TypeScript with proper prop types using the new form values type:
+    ```typescript
+    type Form[Module]Props = {
+      formProps: {
+        onFinish: (values: T[Module]FormValues) => void;
+        initialValues?: Partial<T[Module]FormValues>;
+      };
+      // ... other props
+    };
     ```
--   Add `data-testid` attributes to all form fields and buttons
+-   Implement `useFormErrorHandling`.
+-   Add `data-testid` attributes to all form fields and buttons.
 
 #### F. Page Components - TypeScript Translation & Permissions
 
