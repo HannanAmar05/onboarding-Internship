@@ -37,10 +37,11 @@ export const Component = () => {
         editForm={false}
         formProps={{
           onFinish: (data: TFAQFormData) => {
+            const validDate = formatDate(data.valid_date) ?? "";
             createMutation.mutate(
               {
                 ...data,
-                valid_date: formatDate(data.valid_date)!,
+                valid_date: validDate,
                 status: data.status ? "active" : "hide",
               },
               {

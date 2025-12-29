@@ -13,8 +13,8 @@ import useUpdateFaqMutation from "./_hooks/use-update-faq-mutation";
 export const Component = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const updateMutation = useUpdateFaqMutation(id!);
-  const detailQuery = useFaqQuery(id!);
+  const updateMutation = useUpdateFaqMutation(id || "");
+  const detailQuery = useFaqQuery(id || "");
 
   const breadcrumbs = [
     {
@@ -53,10 +53,11 @@ export const Component = () => {
             valid_date: formatStringToDate(detailQuery.data?.data.valid_date),
           },
           onFinish: (data: TFAQFormData) => {
+            const validDate = formatDate(data.valid_date) ?? "";
             updateMutation.mutate(
               {
                 ...data,
-                valid_date: formatDate(data.valid_date)!,
+                valid_date: validDate,
                 status: data.status ? "active" : "hide",
               },
               {

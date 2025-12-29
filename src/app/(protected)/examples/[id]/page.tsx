@@ -14,7 +14,7 @@ import { formatDate } from "@/utils/date-format";
 export const Component = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const detailQuery = useFaqQuery(id!);
+  const detailQuery = useFaqQuery(id || "");
   const deleteMutation = useDeleteFaqMutation();
   const data = detailQuery.data;
 
@@ -25,7 +25,7 @@ export const Component = () => {
     },
     {
       label: `Detail ${data?.data.category}`,
-      path: generatePath(ROUTES.faq.detail, { id: id! }),
+      path: generatePath(ROUTES.faq.detail, { id: id || "" }),
     },
   ];
 
@@ -76,7 +76,7 @@ export const Component = () => {
             loading={deleteMutation.isPending}
             onClick={() => {
               deleteMutation.mutate(
-                { id: id! },
+                { id: id || "" },
                 {
                   onSuccess: () => {
                     message.success("Faq berhasil dihapus");
