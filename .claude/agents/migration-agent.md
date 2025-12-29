@@ -213,27 +213,20 @@ export type T[Module]FormData = z.infer<typeof [Module]Schema>;
 #### E. Create Form Component
 
 **File: `src/app/(protected)/[module]/_components/form/index.tsx`**
--   **CRITICAL TYPE DEFINITION**:
-    -   Define a **STANDALONE** form values type `T[Module]FormValues` directly in this file.
-    -   **DO NOT** extend or intersect `T[Module]Request` if it causes type mismatches (e.g., `Dayjs` vs `string`).
-    -   **ALWAYS** use `dayjs.Dayjs` for date fields in the form type, even if the API expects strings.
+-   **Form Values Type**:
+    -   Import the inferred Zod type from `./schema` and alias it if necessary or re-export it.
     -   Structure:
         ```typescript
-        export type T[Module]FormValues = {
-          // Explicitly define all fields needed for the form
-          field1: string;
-          date_field: dayjs.Dayjs; // Use Dayjs for form state
-          // ... all other fields
-        };
+        import { T[Module]FormData as T[Module]FormValues } from "./schema";
+        export type { T[Module]FormValues };
         ```
--   Convert JSX to TypeScript with proper prop types using the new form values type:
+-   Convert JSX to TypeScript using `FormProps` from `antd`:
     ```typescript
+    import { FormProps } from "antd";
+
     type Form[Module]Props = {
-      formProps: {
-        onFinish: (values: T[Module]FormValues) => void;
-        initialValues?: Partial<T[Module]FormValues>;
-      };
-      // ... other props
+      formProps: FormProps;
+      // ... other props like error, loading, isEdit, etc.
     };
     ```
 -   Implement `useFormErrorHandling`.
