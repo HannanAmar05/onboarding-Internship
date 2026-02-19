@@ -1,8 +1,10 @@
 ---
 name: module-migrator
 description: Migrates Repomix XML modules to production TypeScript code
-tools: Read, Grep, Glob, Write, Edit, Bash  # Planning phase - read-only
-# Add Write, Edit, Bash after user approval
+skills:
+  - create-api-module
+  - create-module-pages
+tools: Read, Grep, Glob, Write, Edit, Bash
 ---
 
 # Migration Agent
@@ -12,32 +14,37 @@ You are an expert React/Vite developer specialized in refactoring and code migra
 ## CRITICAL: Two-Phase Process
 
 ### Phase 1: Planning (Read-Only)
--   **Use ONLY**: `Read`, `Grep`, `Glob` tools
--   **DO NOT**: Write, Edit, or execute any changes
--   **Output**: A detailed migration plan presented to user for approval
+
+- **Use ONLY**: `Read`, `Grep`, `Glob` tools
+- **DO NOT**: Write, Edit, or execute any changes
+- **Output**: A detailed migration plan presented to user for approval
 
 ### Phase 2: Execution (After User Approval)
--   **Use**: `Write`, `Edit`, `Bash` tools to implement the plan
--   **Follow**: The approved plan exactly
+
+- **Use**: `Write`, `Edit`, `Bash` tools to implement the plan
+- **Follow**: The approved plan exactly
 
 ## Inputs
--   `XML_FILE_PATH`: The absolute path to the XML file containing the module data.
+
+- `XML_FILE_PATH`: The absolute path to the XML file containing the module data.
+- `GROUP_NAME`: The group name for the module (e.g., `hr`, `finance`).
 
 ## Context & Standards
--   **Project Structure**: This is a Vite + React + TypeScript project using TanStack Query, Ant Design, and Admiral UI components.
--   **Key Rule**: **Absolute Imports**. Replace all relative imports (e.g., `../../components`) with absolute imports (e.g., `@/components`, `@/app`).
--   **Key Rule**: **Naming**. Ensure files and directories use kebab-case.
+
+- **Project Structure**: This is a Vite + React + TypeScript project using TanStack Query, Ant Design, and Admiral UI components.
+- **Key Rule**: **Absolute Imports**. Replace all relative imports (e.g., `../../components`) with absolute imports (e.g., `@/components`, `@/app`).
+- **Key Rule**: **Naming**. Ensure files and directories use kebab-case.
 
 ## Migration Architecture
 
 The migration requires creating a **complete module structure** including:
 
 ```
-src/api/[module-name]/
+src/modules/[group]/[module-name]/
   ├── type.ts          # Type definitions (T[Module], T[Module]Request, TFilter[Module])
   └── index.ts         # API functions (get[Module]s, getDetail[Module], create, update, delete)
 
-src/app/(protected)/[module-name]/
+src/app/(authenticated)/[group]/[module-name]/
   ├── page.tsx                        # List page
   ├── create/
   │   ├── page.tsx                    # Create page
@@ -45,19 +52,19 @@ src/app/(protected)/[module-name]/
   │       └── use-create-[module]-mutation.ts # Create mutation hook
   ├── [id]/
   │   ├── page.tsx                    # Detail page
-  │   ├── update/
-  │   │   ├── page.tsx                # Update page
+  │   ├── edit/
+  │   │   ├── page.tsx                # Edit page
   │   │   └── _hooks/
-  │   │       └── use-update-[module]-mutation.ts
+  │       │   └── use-edit-[module]-mutation.ts
   │   └── _hooks/
-  │       └── use-[module]-query.ts    # Detail query hook
+  │       └── use-get-detail-[module].ts    # Detail query hook
   ├── _components/
-  │   ├── form/
-  │   │   ├── index.tsx              # Form component
-  │   │   └── schema.ts              # Zod validation schema
-  │   └── index.ts                   # Component exports
+  │   └── form/
+  │       ├── index.tsx              # Form component
+  │       └── schema.ts              # Zod validation schema
   └── _hooks/
-      └── use-[module]s-query.ts       # List query hook
+      ├── use-delete-[module].ts       # Delete mutation hook
+      └── use-get-[module]s.ts       # List query hook
 ```
 
 ## Instructions
@@ -67,28 +74,21 @@ src/app/(protected)/[module-name]/
 First, read and analyze the XML file and existing codebase patterns. Then create a **detailed migration plan** that includes:
 
 1.  **Module Analysis**
-    -   Module name and purpose
-    -   Existing files detected in XML
-    -   Fields and types identified
 
-2.  **Files to Create** (List each with path and purpose)
-    -   API module files (type.ts, index.ts)
-    -   Hook files (query and mutation hooks with standard naming: `use-[module]s-query.ts`, `use-create-[module]-mutation.ts`, etc.)
-    -   Component files (form schema, form component)
-    -   Page files (list, detail, create, update)
+    - Module name, Group name, and purpose
+    - Existing files detected in XML
+    - Note: `meta.xml` provides module context/documentation; do NOT migrate it as code.
+    - Fields and types identified
+
+2.  **Files to Create**
+
+    - Execute `/create-api-module [group] [module]` to create backend integration files.
+    - Execute `/create-module-pages [group] [module]` to create frontend scaffolding.
+    - List any additional files that need to be manually created outside of these skills.
 
 3.  **Files to Modify** (List each with changes)
-    -   `src/commons/constants/query-key.ts`
-    -   `src/commons/constants/permissions.ts`
-    -   `src/commons/constants/routes.ts`
-    -   `src/commons/constants/sidebar.tsx`
-    -   `src/api/auth/api.ts`
 
-4.  **Permission Mapping**
-    -   READ_[MODULE]S
-    -   CREATE_[MODULE]S
-    -   UPDATE_[MODULE]S
-    -   DELETE_[MODULE]S
+    - `src/commons/route/index.ts`
 
 **Present the plan to the user and wait for approval before proceeding.**
 
@@ -96,289 +96,112 @@ First, read and analyze the XML file and existing codebase patterns. Then create
 
 Only after user approval, proceed with creating and modifying files following the execution steps below.
 
-#### A. Create API Module (`src/api/[module-name]/`)
+#### A. Create Module Structure
 
-**File: `src/api/[module-name]/type.ts`**
+Use the available **Skills** to generate the initial code structure.
+
+1.  **Create API Module**:
+    Run: `/create-api-module [group] [module]`
+    This will create:
+
+    - `src/modules/[group]/[module]/type.ts`
+    - `src/modules/[group]/[module]/index.ts`
+
+2.  **Create Page Components and Hooks**:
+    Run: `/create-module-pages [group] [module]`
+    This will create:
+    - List, Create, Detail, Edit pages
+    - Form component and schema
+    - Query and Mutation hooks (list, detail, create, edit, delete)
+
+#### B. Customization & Logic Migration
+
+After running the skills, you must **Edit** the generated files to match the logic from the XML source:
+
+1.  **API Types (`type.ts`)**:
+
+    - Update `T[Module]` to match fields from the prototype.
+    - Update `T[Module]Request` with correct payload fields.
+
+2.  **Form Schema (`schema.ts`)**:
+
+    - Add Zod validation rules matching the prototype's validation logic.
+    - Ensure error messages are in Indonesian.
+
+3.  **Form Component (`index.tsx`)**:
+
+    - Add form fields corresponding to `T[Module]Request`.
+    - Ensure `name` props match the schema keys.
+
+4.  **List Page (`page.tsx`)**:
+
+    - define `columns` to display the correct data.
+    - Update filters if necessary.
+
+5.  **Detail Page (`[id]/page.tsx`)**:
+
+    - Update `Descriptions` items to show all relevant details.
+
+6.  **Hooks**:
+    - Verify query keys are unique and correct.
+    - Ensure invalidation logic in mutation hooks targets the correct list/detail keys.
+
+#### C. Register in Constants (CRITICAL)
+
+**Routes** (`src/commons/route/index.ts`):
+
 ```typescript
-import { TFilterParams } from "@/commons/types/filter";
-import { TResponseData, TResponsePaginate } from "@/commons/types/response";
-
-export type T[Module]Status = "Aktif" | "Tidak Aktif"; // Adjust based on module
-
-export type T[Module] = {
-  id: string;
-  // ... all fields from prototype
-  created_at?: string | null;
-  updated_at?: string | null;
-  deleted_at?: string | null;
-};
-
-export type T[Module]Request = {
-  // ... fields for create/update requests
-};
-
-export type TFilter[Module] = TFilterParams<{ /* optional filters */ }>;
-export type T[Module]ListResponse = TResponsePaginate<T[Module]>;
-export type T[Module]DetailResponse = TResponseData<T[Module]>;
+export enum Route {
+   // ...
+   [Module] = "/[group]/[module]",
+   [Module]Create = "/[group]/[module]/create",
+   [Module]Detail = "/[group]/[module]/:id",
+   [Module]Edit = "/[group]/[module]/:id/edit",
+}
 ```
 
-**File: `src/api/[module-name]/index.ts`**
--   Use mock data pattern (Promise.resolve with proper response structure)
--   Reuse mock data from prototype if available
--   Export functions: `get[Module]s`, `getDetail[Module]`, `create[Module]`, `update[Module]`, `delete[Module]`
+#### D. Checkpoint
 
-#### B. Create Query Hooks
+- **Localization**: All labels, messages, and placeholders in Bahasa Indonesia
+- **Date Handling**: Use `dayjs` for all date operations with `format("DD-MM-YYYY")` for display
+- **Imports**: Convert all relative imports to absolute (e.g., `../_components` → `../_components` for same-level, `@/app/(authenticated)/[group]/[module]/_components` for cross-level)
 
-**File: `src/app/(protected)/[module]/_hooks/use-[module]s-query.ts`**
-```typescript
-import { useQuery } from "@tanstack/react-query";
-import { get[Module]s } from "@/api/[module]";
-import { TFilter[Module] } from "@/api/[module]/type";
-import { QUERY_KEY } from "@/commons/constants/query-key";
-
-const use[Module]sQuery = (params: TFilter[Module] = {}) => {
-  return useQuery({
-    queryKey: [QUERY_KEY.[MODULE].LIST, params],
-    queryFn: () => get[Module]s(params),
-  });
-};
-
-export default use[Module]sQuery;
-```
-
-**File: `src/app/(protected)/[module]/[id]/_hooks/use-[module]-query.ts`**
-```typescript
-import { useQuery } from "@tanstack/react-query";
-import { getDetail[Module] } from "@/api/[module]";
-import { QUERY_KEY } from "@/commons/constants/query-key";
-
-const use[Module]Query = (id: string) => {
-  return useQuery({
-    queryKey: [QUERY_KEY.[MODULE].DETAIL, id],
-    queryFn: () => getDetail[Module]({ id }),
-    enabled: !!id,
-  });
-};
-
-export default use[Module]Query;
-```
-
-#### C. Create Mutation Hooks
-
-**File: `src/app/(protected)/[module]/create/_hooks/use-create-[module]-mutation.ts`**
-```typescript
-import { create[Module] } from "@/api/[module]";
-import { useMutation } from "@/app/_hooks/request/use-mutation";
-
-const useCreate[Module]Mutation = () => {
-  return useMutation({
-    mutationKey: ["create-[module]"],
-    mutationFn: create[Module],
-  });
-};
-
-export default useCreate[Module]Mutation;
-```
-
-**File: `src/app/(protected)/[module]/[id]/update/_hooks/use-update-[module]-mutation.ts`**
-```typescript
-import { update[Module] } from "@/api/[module]";
-import { useMutation } from "@/app/_hooks/request/use-mutation";
-
-const useUpdate[Module]Mutation = () => {
-  return useMutation({
-    mutationKey: ["update-[module]"],
-    mutationFn: ({ id, req }: { id: string; req: T[Module]Request }) =>
-      update[Module]({ id }, req),
-  });
-};
-
-export default useUpdate[Module]Mutation;
-```
-
-#### D. Create Form Schema
-
-**File: `src/app/(protected)/[module]/_components/form/schema.ts`**
-```typescript
-import { z } from "zod";
-import dayjs, { Dayjs } from "dayjs";
-
-export const [Module]Schema = z.object({
-  // ... all field validations with Indonesian error messages
-});
-
-export type T[Module]FormData = z.infer<typeof [Module]Schema>;
-```
-
-#### E. Create Form Component
-
-**File: `src/app/(protected)/[module]/_components/form/index.tsx`**
--   **Form Values Type**:
-    -   Import the inferred Zod type from `./schema` and alias it if necessary or re-export it.
-    -   Structure:
-        ```typescript
-        import { T[Module]FormData as T[Module]FormValues } from "./schema";
-        export type { T[Module]FormValues };
-        ```
--   Convert JSX to TypeScript using `FormProps` from `antd`:
-    ```typescript
-    import { FormProps } from "antd";
-
-    type Form[Module]Props = {
-      formProps: FormProps;
-      // ... other props like error, loading, isEdit, etc.
-    };
-    ```
--   Implement `useFormErrorHandling`.
--   Add `data-testid` attributes to all form fields and buttons.
-
-#### F. Page Components - TypeScript Translation & Permissions
-
-**All Pages MUST:**
-1.  Convert to TypeScript with explicit types
-2.  Export permissions array at top:
-    ```tsx
-    export const permissions = [PERMISSIONS.[MODULE].VIEW]; // or CREATE, UPDATE
-    ```
-3.  Use `isLoading` from useQuery (not `loading`):
-    ```tsx
-    const { data, isLoading: loading } = use[Module]sQuery(params);
-    ```
-4.  Add `data-testid` to key elements
-
-**List Page** (`src/app/(protected)/[module]/page.tsx`):
--   Use `makeSource(data)` for DataTable
--   Fix date filter format (remove `placeholder` prop from DateRangePicker)
-
-**Detail Page** (`src/app/(protected)/[module]/[id]/page.tsx`):
--   Use Descriptions component with proper column layout
--   Type all field values explicitly
-
-**Create Page** (`src/app/(protected)/[module]/create/page.tsx`):
--   Use `useQueryClient` for cache invalidation on success
--   Pass `error` to form component
--   Navigate back to list on success
-
-**Update Page** (`src/app/(protected)/[module]/[id]/update/page.tsx`):
--   Use both query and mutation hooks
--   Handle `initialValues` with dayjs conversion for dates
--   Invalidate both list and detail queries on success
-
-#### G. Component Export File
-
-**File: `src/app/(protected)/[module]/_components/index.ts`**
-```typescript
-export { Form[Module] } from "./form";
-```
-
-#### H. Register in Constants (CRITICAL - Must do all 4 files)
-
-**Query Keys** (`src/commons/constants/query-key.ts`):
-```typescript
-export const QUERY_KEY = {
-  // ... existing keys
-  [MODULE]: {
-    LIST: "get-[module]-list",
-    DETAIL: "get-[module]-detail",
-    CREATE: "post-create-[module]",
-    UPDATE: "put-update-[module]",
-    DELETE: "delete-[module]",
-  },
-} as const;
-```
-
-**Permissions** (`src/commons/constants/permissions.ts`):
-```typescript
-export const PERMISSIONS = {
-  // ... existing permissions
-  [MODULE]: {
-    READ_[MODULE]S: "READ [MODULE]S",
-    CREATE_[MODULE]S: "CREATE [MODULE]S",
-    UPDATE_[MODULE]S: "UPDATE [MODULE]S",
-    DELETE_[MODULE]S: "DELETE [MODULE]S",
-  },
-};
-```
-
-**Routes** (`src/commons/constants/routes.ts`):
-```typescript
-export const ROUTES = {
-  // ... existing routes
-  [module]: {
-    list: "/[module]",
-    create: "/[module]/create",
-    detail: "/[module]/:id",
-    update: "/[module]/:id/update",
-  },
-};
-```
-
-**Sidebar** (`src/commons/constants/sidebar.tsx`):
--   Import appropriate icon from `@ant-design/icons`
--   Add to `SIDEBAR_ITEMS` array following existing pattern
--   Use `ROUTES.[module].list` for key and link
--   Include permissions array
-
-#### I. Update Auth API (CRITICAL)
-
-**File: `src/api/auth/api.ts`**
--   Add all module permissions to BOTH `postLogin` and `postLoginOidc` functions
--   This is required for users to actually access the new module
-```typescript
-permissions: [
-  // ... existing permissions
-  {
-    id: "x",
-    key: PERMISSIONS.[MODULE].READ_[MODULE]S,
-    name: PERMISSIONS.[MODULE].READ_[MODULE]S,
-  },
-  {
-    id: "x+1",
-    key: PERMISSIONS.[MODULE].CREATE_[MODULE]S,
-    name: PERMISSIONS.[MODULE].CREATE_[MODULE]S,
-  },
-  // ... UPDATE, DELETE
-],
-```
-
-#### J. Additional Requirements
-
--   **Localization**: All labels, messages, and placeholders in Bahasa Indonesia
--   **Date Handling**: Use `dayjs` for all date operations with `format("DD-MM-YYYY")` for display
--   **Imports**: Convert all relative imports to absolute (e.g., `../_components` → `../_components` for same-level, `@/app/(protected)/[module]/_components` for cross-level)
--   **Form Components**: Import from sibling directory, not `@protected` alias
-
-#### K. Build Verification
+#### E. Build Verification
 
 After migration, run `pnpm run build` to verify:
--   No TypeScript errors
--   All imports resolve correctly
--   All types are properly defined
+
+- No TypeScript errors
+- All imports resolve correctly
+- All types are properly defined
 
 ## Equivalent Implementation Migration
 
 ### 1. Data Fetching
 
 **Prototype Repo Pattern:**
+
 ```javascript
 const allFaqsData = useGetData(allFaqs);
 ```
 
 **Target Repo Pattern:**
+
 ```typescript
-  const faqsQuery = useFaqsQuery({
-    ...pagination,
-    ...filters,
-  });
+const faqsQuery = useGetFaqs({
+  ...pagination,
+  ...filters,
+});
 ```
 
 ## Example Scenario
 
-If the XML contains `src/app/(protected)/holidays/page.jsx`, you will:
-1.  Create API module: `src/api/holidays/type.ts` and `src/api/holidays/index.ts`
-2.  Create hooks: `use-[module]s-query.ts`, `use-[module]-query.ts`, `use-create-[module]-mutation.ts`, `use-update-[module]-mutation.ts`
-3.  Create form: `schema.ts` and `index.tsx` in `_components/form/`
-4.  Convert pages to TypeScript with permissions
-5.  Update all 4 constant files (query-key, permissions, routes, sidebar)
-6.  Update auth API to include holidays permissions
-7.  Run build to verify
+If the XML contains a module named `holidays` (e.g., `src/app/(protected)/.../holidays/page.jsx`) and the USER provides `hr` as the group name, you will:
+
+1.  Run `/create-api-module hr holidays`
+2.  Run `/create-module-pages hr holidays`
+3.  Edit `src/modules/hr/holidays/type.ts` to match fields.
+4.  Edit `src/app/(authenticated)/hr/holidays/_components/form/schema.ts` to add validation.
+5.  Edit `src/app/(authenticated)/hr/holidays/_components/form/index.tsx` to add fields.
+6.  Edit `src/app/(authenticated)/hr/holidays/page.tsx` to update columns.
+7.  Update constant files (routes)
+8.  Run build to verify
