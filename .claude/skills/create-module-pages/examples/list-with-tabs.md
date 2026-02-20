@@ -5,15 +5,17 @@
 ```typescript
 import { Tabs } from "antd";
 import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import { DataTable, Page } from "admiral";
-import { makeSource } from "@/utils/utils";
-import { useRequestsQuery } from "../_hooks/use-requests-query";
+import { useSearchParams } from "react-router";
+import { Page } from "admiral";
+import Datatable from "admiral/table/datatable/index";
+import { makeSource } from "@/utils/data-table";
 import { PERMISSIONS } from "@/commons/constants/permissions";
+
+import useRequestsQuery from "../_hooks/use-requests-query";
 
 export const permissions = [PERMISSIONS.REQUESTS.READ_REQUESTS];
 
-export default function RequestsListPage() {
+export const Component = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const defaultTab = searchParams.get("status") || "pending";
   const [activeTab, setActiveTab] = useState(defaultTab);
@@ -39,38 +41,37 @@ export default function RequestsListPage() {
       label: "Pending Approval",
       key: "pending",
       children: (
-        <DataTable
+        <Datatable
           source={makeSource(pendingData)}
           loading={isPendingLoading}
           columns={columns}
           rowKey="id"
-          // Add filter components specific to pending tab if needed
         />
-      )
+      ),
     },
     {
       label: "Approved",
       key: "approved",
       children: (
-        <DataTable
+        <Datatable
           source={makeSource(approvedData)}
           loading={isApprovedLoading}
           columns={columns}
           rowKey="id"
         />
-      )
+      ),
     },
     {
       label: "Rejected",
       key: "rejected",
       children: (
-        <DataTable
+        <Datatable
           source={makeSource(rejectedData)}
           loading={isRejectedLoading}
           columns={columns}
           rowKey="id"
         />
-      )
+      ),
     },
   ];
 
@@ -81,9 +82,11 @@ export default function RequestsListPage() {
         onChange={handleTabChange}
         items={tabItems}
         className="mb-4"
-        destroyInactiveTabPane={true} // Optional: mount only active tab content
+        destroyInactiveTabPane={true}
       />
     </Page>
   );
-}
+};
+
+export default Component;
 ```

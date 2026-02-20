@@ -1,42 +1,40 @@
 # Module Page Templates
 
 **IMPORTANT NOTES:**
-- For **Management Reports** modules, use `MR` prefix in route enum names (e.g., `MREntityDistricts`, `MRPeriodActuals`)
-- Use `ModalAction` component for delete confirmations (both list and detail pages)
-- Export query keys as constants from query hooks
 - All labels, placeholders, and messages in **English**
+- Use `ROUTES` object from `@/commons/constants/routes` (NOT an enum)
+- Use `generatePath` from `react-router` for parameterized routes
+- Use `useNavigate` from `react-router` for navigation
+- Define query/mutation keys as exported constants inside each hook file
+- Default export all hooks and page components
 
 ## 1. List Page Template (`page.tsx`)
 
 ```typescript
-import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
-import { DataTable } from "admiral";
-import { Button, Flex, Tag, Tooltip, Typography } from "antd";
+import { DeleteOutlined, EditOutlined, EyeOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import { Page } from "admiral";
+import Datatable from "admiral/table/datatable/index";
+import { Button, Flex, message, Tag, Typography } from "antd";
 import { ColumnsType } from "antd/es/table";
-import { useState } from "react";
-import { Link } from "react-router";
+import { generatePath, Link } from "react-router";
 
-import { Route, route } from "@/commons/route";
-import Page from "@/components/layouts/main/page";
-import { T[Module] } from "@/modules/[group]/[module]/type";
-import { useFilter } from "@/utils/filter-v2";
-import { makeSource } from "@/utils/utils";
+import { T[Module] } from "@/api/[module]/type";
+import { ROUTES } from "@/commons/constants/routes";
+import { useFilter } from "@/app/_hooks/datatable/use-filter";
+import { makeSource } from "@/utils/data-table";
 
-import ModalAction from "@/app/(authenticated)/_components/modal";
-import { useDelete[Module] } from "./_hooks/use-delete-[module]";
-import { useGet[Module]s } from "./_hooks/use-get-[module]s";
+import use[Module]sQuery from "./_hooks/use-[module]s-query";
+import useDelete[Module]Mutation from "./_hooks/use-delete-[module]-mutation";
 
-const Component = () => {
+export const Component = () => {
   const { handleChange, pagination, filters } = useFilter();
-  const [openModal, setOpenModal] = useState(false);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const listQuery = useGet[Module]s({
+  const listQuery = use[Module]sQuery({
     ...pagination,
     ...filters,
   });
 
-  const deleteMutation = useDelete[Module]();
+  const deleteMutation = useDelete[Module]Mutation();
 
   const columns: ColumnsType<T[Module]> = [
     {
@@ -45,49 +43,66 @@ const Component = () => {
       title: "Name",
       sorter: true,
       render: (_, record) => {
-        return <Typography.Text>{record.name}</Typography.Text>;
+        return (
+          <Typography.Link underline>
+            <Link
+              to={generatePath(ROUTES.[module].detail, {
+                id: record.id,
+              })}
+            >
+              {record.name}
+            </Link>
+          </Typography.Link>
+        );
       },
     },
     // Add more columns as needed
     {
-      dataIndex: "row_status",
-      key: "row_status",
+      key: "status",
       title: "Status",
       sorter: true,
       align: "center",
-      render: (row_status) => {
-        const color = row_status === 1 ? "green" : "red";
-        const label = row_status === 1 ? "Active" : "Inactive";
+      render: (_, record) => {
+        const color = record.status === "active" ? "green" : "red";
+        const label = record.status === "active" ? "Active" : "Inactive";
         return <Tag color={color}>{label}</Tag>;
       },
     },
     {
       dataIndex: "Action",
       title: "Action",
-      key: "action",
+      key: "Action",
       render: (_, record) => {
         return (
           <Flex>
-            <Tooltip title="Edit">
-              <Link
-                to={route(Route.[Module]Edit, {
-                  id: record.id,
-                })}
-              >
-                <Button type="link" icon={<EditOutlined />} data-testid={`edit-btn-${record.id}`} />
-              </Link>
-            </Tooltip>
-            <Tooltip title="Delete">
-              <Button
-                type="link"
-                icon={<DeleteOutlined style={{ color: "red" }} />}
-                onClick={() => {
-                  setOpenModal(true);
-                  setSelectedId(record.id);
-                }}
-                data-testid={`delete-btn-${record.id}`}
-              />
-            </Tooltip>
+            <Link
+              to={generatePath(ROUTES.[module].detail, {
+                id: record.id,
+              })}
+            >
+              <Button type="link" icon={<EyeOutlined style={{ color: "green" }} />} />
+            </Link>
+            <Button
+              type="link"
+              icon={<DeleteOutlined style={{ color: "red" }} />}
+              onClick={() => {
+                deleteMutation.mutate(
+                  { id: record.id },
+                  {
+                    onSuccess: () => {
+                      message.success("[Module] deleted successfully");
+                    },
+                  },
+                );
+              }}
+            />
+            <Link
+              to={generatePath(ROUTES.[module].update, {
+                id: record.id,
+              })}
+            >
+              <Button type="link" icon={<EditOutlined />} />
+            </Link>
           </Flex>
         );
       },
@@ -96,39 +111,24 @@ const Component = () => {
 
   const breadcrumbs = [
     {
-      label: "[Parent Label]",
-      path: "",
-    },
-    {
       label: "[Module]s",
-      path: Route.[Module],
+      path: ROUTES.[module].list,
     },
   ];
 
   return (
-    <Page
-      title="[Module]s"
-      breadcrumbs={breadcrumbs}
-      topActions={
-        <Link to={Route.[Module]Create}>
-          <Button type="primary" icon={<PlusOutlined />} data-testid="create-btn">
-            [Module]
-          </Button>
-        </Link>
-      }
-      noStyle
-    >
-      <DataTable
+    <Page title="[Module]s" breadcrumbs={breadcrumbs} topActions={<TopAction />} noStyle>
+      <Datatable
         filterComponents={[
           {
             label: "Status",
-            name: "row_status",
+            name: "status",
             type: "Select",
             placeholder: "Select Status",
-            value: filters.row_status,
+            value: filters.status,
             options: [
-              { label: "Active", value: 1 },
-              { label: "Inactive", value: 0 },
+              { label: "Active", value: "active" },
+              { label: "Inactive", value: "inactive" },
             ],
           },
         ]}
@@ -139,69 +139,41 @@ const Component = () => {
         source={makeSource(listQuery.data)}
         columns={columns}
         search={filters.search}
-        data-testid="[module]-table"
-      />
-      <ModalAction
-        type="delete"
-        open={openModal}
-        onOk={() => {
-          if (selectedId) {
-            deleteMutation.mutate(
-              { id: selectedId },
-              {
-                onSuccess: () => {
-                  setOpenModal(false);
-                  setSelectedId(null);
-                },
-              },
-            );
-          }
-        }}
-        onCancel={() => {
-          setOpenModal(false);
-          setSelectedId(null);
-        }}
-        cancelButtonProps={{
-          disabled: deleteMutation.isPending,
-        }}
-        okButtonProps={{
-          loading: deleteMutation.isPending,
-        }}
-        okType="primary"
-        description="Are you sure you want to delete this data?"
-        title="Delete Data"
-        data-testid="delete-modal"
       />
     </Page>
   );
 };
+
+const TopAction = () => (
+  <Link to={ROUTES.[module].create}>
+    <Button icon={<PlusCircleOutlined />}>Add [Module]</Button>
+  </Link>
+);
+
 export default Component;
 ```
 
 ## 2. Create Page Template (`create/page.tsx`)
 
 ```typescript
-import { useRouter } from "@/app/_hooks/router/use-router";
-import Page from "@/components/layouts/main/page";
+import { Page } from "admiral";
+import { useNavigate } from "react-router";
+import { message } from "antd";
 
-import { Route } from "@/commons/route";
+import { ROUTES } from "@/commons/constants/routes";
 
 import Form[Module] from "../_components/form";
 import { T[Module]FormData } from "../_components/form/schema";
-import { useCreate[Module]Mutation } from "./_hooks/use-create-[module]-mutation";
+import useCreate[Module] from "./_hooks/use-create-[module]";
 
-const Component = () => {
-  const router = useRouter();
-  const createMutation = useCreate[Module]Mutation();
+export const Component = () => {
+  const navigate = useNavigate();
+  const createMutation = useCreate[Module]();
 
   const breadcrumbs = [
     {
-      label: "[Parent Label]",
-      path: "",
-    },
-    {
       label: "[Module]s",
-      path: Route.[Module],
+      path: ROUTES.[module].list,
     },
     {
       label: "Create [Module]",
@@ -214,12 +186,10 @@ const Component = () => {
       title="Create [Module]"
       breadcrumbs={breadcrumbs}
       noStyle
-      goBack={() => {
-        router.push(Route.[Module]);
-      }}
+      goBack={() => navigate(ROUTES.[module].list)}
     >
       <Form[Module]
-        error={createMutation.error?.response?.data}
+        error={createMutation.error}
         loading={createMutation.isPending}
         editForm={false}
         formProps={{
@@ -227,11 +197,12 @@ const Component = () => {
             createMutation.mutate(
               {
                 ...data,
-                // Add data transformation if needed (e.g., boolean to number)
+                // Add data transformation if needed
               },
               {
                 onSuccess: () => {
-                  router.push(Route.[Module]);
+                  message.success("[Module] created successfully");
+                  navigate(ROUTES.[module].list);
                 },
               },
             );
@@ -250,81 +221,61 @@ export default Component;
 ```typescript
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import { Page, Section } from "admiral";
-import { Button, Descriptions, Flex, Tag, Typography } from "antd";
-import { useState } from "react";
-import { Link } from "react-router";
-import { useParams } from "react-router";
+import { Button, Descriptions, Flex, message, Tag, Typography } from "antd";
+import { DescriptionsProps } from "antd/lib";
+import { generatePath, useNavigate, useParams } from "react-router";
 
-import { Route, route } from "@/commons/route";
+import { ROUTES } from "@/commons/constants/routes";
+import { formatDate } from "@/utils/date-format";
 
-import ModalAction from "@/app/(authenticated)/_components/modal";
-import { useDelete[Module] } from "../_hooks/use-delete-[module]";
-import { useGetDetail[Module] } from "./_hooks/use-get-detail-[module]";
+import useDelete[Module]Mutation from "../_hooks/use-delete-[module]-mutation";
+import use[Module]Query from "./_hooks/use-[module]-query";
 
-const Component = () => {
+export const Component = () => {
   const { id } = useParams<{ id: string }>();
-  const detailQuery = useGetDetail[Module](id!);
-  const deleteMutation = useDelete[Module]();
-  const [openModal, setOpenModal] = useState(false);
-
-  const handleDelete = () => {
-    setOpenModal(true);
-  };
+  const navigate = useNavigate();
+  const detailQuery = use[Module]Query(id || "");
+  const deleteMutation = useDelete[Module]Mutation();
+  const data = detailQuery.data;
 
   const breadcrumbs = [
     {
-      label: "[Parent Label]",
-      path: "",
-    },
-    {
       label: "[Module]s",
-      path: Route.[Module],
+      path: ROUTES.[module].list,
     },
     {
-      label: detailQuery.data?.data.name || "",
-      path: "#",
+      label: `Detail ${data?.data.name ?? ""}`,
+      path: generatePath(ROUTES.[module].detail, { id: id || "" }),
     },
   ];
 
-  const items = [
+  const items: DescriptionsProps["items"] = [
     {
       key: "name",
       label: "Name",
-      children: <Typography.Text strong>{detailQuery.data?.data.name ?? "-"}</Typography.Text>,
+      children: <Typography.Text strong>{data?.data.name ?? "-"}</Typography.Text>,
     },
     {
-      key: "row_status",
+      key: "status",
       label: "Status",
-      children: (
-        <Typography.Text strong>
-          {detailQuery.data?.data.row_status === 1 ? (
-            <Tag color="green">Active</Tag>
-          ) : (
-            <Tag color="red">Inactive</Tag>
-          )}
-        </Typography.Text>
-      ),
+      children: (() => {
+        const color = data?.data.status === "active" ? "green" : "red";
+        const label = data?.data.status === "active" ? "Active" : "Inactive";
+        return <Tag color={color}>{label}</Tag>;
+      })(),
     },
     {
       key: "created_at",
       label: "Created At",
       children: (
-        <Typography.Text strong>
-          {detailQuery.data?.data.created_at
-            ? new Date(detailQuery.data.data.created_at).toLocaleString("en-US")
-            : "-"}
-        </Typography.Text>
+        <Typography.Text strong>{formatDate(data?.data.created_at) ?? "-"}</Typography.Text>
       ),
     },
     {
       key: "updated_at",
       label: "Updated At",
       children: (
-        <Typography.Text strong>
-          {detailQuery.data?.data.updated_at
-            ? new Date(detailQuery.data.data.updated_at).toLocaleString("en-US")
-            : "-"}
-        </Typography.Text>
+        <Typography.Text strong>{formatDate(data?.data.updated_at) ?? "-"}</Typography.Text>
       ),
     },
     // Add more fields
@@ -332,31 +283,39 @@ const Component = () => {
 
   return (
     <Page
+      title={`Detail : ${data?.data.name ?? ""}`}
+      breadcrumbs={breadcrumbs}
+      noStyle
+      goBack={() => navigate(ROUTES.[module].list)}
       topActions={
-        <Flex gap={10}>
+        <Flex gap={8}>
           <Button
-            htmlType="button"
-            icon={<DeleteOutlined />}
-            onClick={handleDelete}
+            loading={deleteMutation.isPending}
+            onClick={() => {
+              deleteMutation.mutate(
+                { id: id || "" },
+                {
+                  onSuccess: () => {
+                    message.success("[Module] deleted successfully");
+                    navigate(-1);
+                  },
+                },
+              );
+            }}
             danger
-            data-testid="delete-btn"
+            icon={<DeleteOutlined />}
           >
             Delete
           </Button>
-          <Link
-            to={route(Route.[Module]Edit, {
-              id: id!,
-            })}
+          <Button
+            onClick={() => navigate(generatePath(ROUTES.[module].update, { id }))}
+            type="primary"
+            icon={<EditOutlined />}
           >
-            <Button htmlType="button" type="primary" icon={<EditOutlined />} data-testid="edit-btn">
-              Edit
-            </Button>
-          </Link>
+            Edit
+          </Button>
         </Flex>
       }
-      title={`Detail ${detailQuery.data?.data.name || ""}`}
-      breadcrumbs={breadcrumbs}
-      noStyle
     >
       <Section loading={detailQuery.isLoading}>
         <Section title="[Module] Information">
@@ -364,46 +323,22 @@ const Component = () => {
             bordered
             layout="horizontal"
             items={items}
+            labelStyle={{
+              width: "20%",
+              textAlign: "left",
+            }}
+            contentStyle={{
+              width: "30%",
+            }}
             column={{
               md: 1,
               lg: 2,
               xl: 2,
               xxl: 2,
             }}
-            data-testid="[module]-descriptions"
           />
         </Section>
       </Section>
-      <ModalAction
-        type="delete"
-        open={openModal}
-        onOk={() => {
-          if (id) {
-            deleteMutation.mutate(
-              { id },
-              {
-                onSuccess: () => {
-                  setOpenModal(false);
-                  window.location.href = Route.[Module];
-                },
-              },
-            );
-          }
-        }}
-        onCancel={() => {
-          setOpenModal(false);
-        }}
-        cancelButtonProps={{
-          disabled: deleteMutation.isPending,
-        }}
-        okButtonProps={{
-          loading: deleteMutation.isPending,
-        }}
-        okType="primary"
-        description="Are you sure you want to delete this data?"
-        title="Delete Data"
-        data-testid="delete-modal"
-      />
     </Page>
   );
 };
@@ -411,73 +346,71 @@ const Component = () => {
 export default Component;
 ```
 
-## 4. Edit Page Template (`[id]/edit/page.tsx`)
+## 4. Update Page Template (`[id]/update/page.tsx`)
 
 ```typescript
-import { useRouter } from "@/app/_hooks/router/use-router";
-import { useParams } from "react-router";
-import Page from "@/components/layouts/main/page";
+import { Page } from "admiral";
+import { generatePath, useNavigate, useParams } from "react-router";
+import { message } from "antd";
 
-import { Route } from "@/commons/route";
+import { ROUTES } from "@/commons/constants/routes";
 
 import Form[Module] from "../../_components/form";
 import { T[Module]FormData } from "../../_components/form/schema";
-import { useGetDetail[Module] } from "../_hooks/use-get-detail-[module]";
-import { useEdit[Module]Mutation } from "./_hooks/use-edit-[module]-mutation";
+import use[Module]Query from "../_hooks/use-[module]-query";
+import useUpdate[Module]Mutation from "./_hooks/use-update-[module]-mutation";
 
-const Component = () => {
+export const Component = () => {
   const { id } = useParams<{ id: string }>();
-  const router = useRouter();
-  const editMutation = useEdit[Module]Mutation(id!);
-  const detailQuery = useGetDetail[Module](id!);
+  const navigate = useNavigate();
+  const updateMutation = useUpdate[Module]Mutation(id || "");
+  const detailQuery = use[Module]Query(id || "");
 
   const breadcrumbs = [
     {
-      label: "[Parent Label]",
-      path: "",
-    },
-    {
       label: "[Module]s",
-      path: Route.[Module],
+      path: ROUTES.[module].list,
     },
     {
-      label: "Edit [Module]",
+      label: `Detail ${detailQuery.data?.data.name ?? ""}`,
+      path: generatePath(ROUTES.[module].detail, { id }),
+    },
+    {
+      label: "Update [Module]",
       path: "",
     },
   ];
 
   return (
     <Page
-      title="Edit [Module]"
+      title={`Update ${detailQuery.data?.data.name ?? ""}`}
       breadcrumbs={breadcrumbs}
       noStyle
-      goBack={() => {
-        router.push(Route.[Module]);
-      }}
-      loading={detailQuery.isLoading}
+      goBack={() => navigate(ROUTES.[module].list)}
     >
       <Form[Module]
         key={detailQuery.data?.data.id}
-        error={editMutation.error?.response?.data}
-        loading={editMutation.isPending}
+        error={updateMutation.error}
+        loading={updateMutation.isPending}
         editForm={true}
         formProps={{
-          disabled: editMutation.isPending || !detailQuery.data?.data,
+          disabled: updateMutation.isPending || !detailQuery.data?.data,
           initialValues: {
-            // Map initial values here, including boolean to number conversion if needed
+            // Map initial values here
             name: detailQuery.data?.data.name,
-            row_status: detailQuery.data?.data.row_status === 1,
+            status: detailQuery.data?.data.status === "active",
           },
-          onFinish: (formData: T[Module]FormData) => {
-            editMutation.mutate(
+          onFinish: (data: T[Module]FormData) => {
+            updateMutation.mutate(
               {
-                ...formData,
-                // Add transformations (e.g., boolean to number)
-                row_status: formData.row_status ? 1 : 0,
+                ...data,
+                // Add transformations if needed
+                status: data.status ? "active" : "inactive",
               },
               {
                 onSuccess: () => {
-                  router.push(Route.[Module]);
+                  message.success("[Module] updated successfully");
+                  navigate(ROUTES.[module].list);
                 },
               },
             );
@@ -494,12 +427,12 @@ export default Component;
 ## 5. Form Component (`_components/form/index.tsx`)
 
 ```typescript
-import { Section } from "admiral";
 import { Button, Col, Form, FormProps, Input, Row, Space, Switch } from "antd";
+import { useNavigate } from "react-router";
+import { Section } from "admiral";
 
-import { useRouter } from "@/app/_hooks/router/use-router";
-import { useFormErrorHandling } from "@/app/_hooks/use-form-handling";
-import { TApiResponseError } from "@/commons/types/api";
+import { useFormErrorHandling } from "@/app/_hooks/form/use-form-error-handling";
+import { TResponseError } from "@/commons/types/response";
 import { createZodSync } from "@/utils/zod-sync";
 
 import { [Module]Schema } from "./schema";
@@ -508,51 +441,35 @@ interface Props {
   formProps: FormProps;
   loading?: boolean;
   loadingData?: boolean;
-  error?: TApiResponseError | null;
+  error: TResponseError | null;
   editForm?: boolean;
 }
 
 const rule = createZodSync([Module]Schema);
 
 const Form[Module] = ({ formProps, loading, loadingData, error, editForm }: Props) => {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [form] = Form.useForm();
 
-  useFormErrorHandling(error, ({ key, value }) => form.setFields([{ name: key, errors: [value] }]));
+  useFormErrorHandling(error, ({ key, message }) =>
+    form.setFields([{ name: key, errors: [message] }]),
+  );
 
   return (
-    <Form {...formProps} form={form} layout="vertical" data-testid="[module]-form">
+    <Form {...formProps} form={form} layout="vertical">
       <Section loading={loadingData}>
         <Section title="[Module] Information">
           <Row gutter={[16, 0]}>
             <Col span={24} sm={12}>
-              <Form.Item
-                label="Name"
-                name="name"
-                required
-                rules={[rule]}
-                data-testid="[module]-name-input"
-              >
-                <Input placeholder="Enter name" data-testid="[module]-name-field" />
+              <Form.Item label="Name" name="name" required rules={[rule]}>
+                <Input placeholder="Enter name" />
               </Form.Item>
             </Col>
-            {editForm && (
-              <Col span={24} sm={12}>
-                <Form.Item
-                  label="Status"
-                  name="row_status"
-                  valuePropName="checked"
-                  rules={[rule]}
-                  data-testid="[module]-status-switch"
-                >
-                  <Switch
-                    checkedChildren="Active"
-                    unCheckedChildren="Inactive"
-                    data-testid="[module]-status-field"
-                  />
-                </Form.Item>
-              </Col>
-            )}
+            <Col span={24} sm={12}>
+              <Form.Item label="Status" name="status" rules={[rule]}>
+                <Switch checkedChildren="Active" unCheckedChildren="Inactive" defaultChecked />
+              </Form.Item>
+            </Col>
             {/* Add more form items here */}
           </Row>
         </Section>
@@ -560,13 +477,7 @@ const Form[Module] = ({ formProps, loading, loadingData, error, editForm }: Prop
 
       <Form.Item style={{ textAlign: "right", marginTop: 16 }}>
         <Space>
-          <Button
-            type="default"
-            htmlType="button"
-            onClick={() => router.back()}
-            disabled={loading}
-            data-testid="[module]-cancel-btn"
-          >
+          <Button type="default" htmlType="button" onClick={() => navigate(-1)} disabled={loading}>
             Cancel
           </Button>
           <Button
@@ -574,7 +485,6 @@ const Form[Module] = ({ formProps, loading, loadingData, error, editForm }: Prop
             htmlType="submit"
             disabled={loading || formProps.disabled}
             loading={loading}
-            data-testid="[module]-save-btn"
           >
             {!editForm ? "Save" : "Save Changes"}
           </Button>
@@ -595,126 +505,105 @@ export const [Module]Schema = z.object({
   name: z
     .string({ message: "Name is required" })
     .min(1, { message: "Name is required" }),
-  row_status: z.boolean().optional(), // In the form it's a switch (boolean). We convert to 0 | 1 on submit.
+  status: z.boolean().optional().default(true),
 });
 
 export type T[Module]FormData = z.infer<typeof [Module]Schema>;
 ```
 
-## 7. Get List Hook Template (`_hooks/use-get-[module]s.ts`)
+## 7. Get List Hook Template (`_hooks/use-[module]s-query.ts`)
 
 ```typescript
-import { get[Module]s } from "@/modules/[group]/[module]";
-import { TFilter[Module] } from "@/modules/[group]/[module]/type";
 import { useQuery } from "@tanstack/react-query";
 
-export const get[Module]sQueryKey = "get-[module]-list";
+import { get[Module]s } from "@/api/[module]";
+import { TFilter[Module] } from "@/api/[module]/type";
 
-export const useGet[Module]s = (params: TFilter[Module] = {}) => {
+export const [module]sQueryKey = "get-[module]-list";
+
+const use[Module]sQuery = (params: TFilter[Module] = {}) => {
   return useQuery({
-    queryKey: [get[Module]sQueryKey, params],
+    queryKey: [[module]sQueryKey, params],
     queryFn: () => get[Module]s(params),
   });
 };
+
+export default use[Module]sQuery;
 ```
 
-## 8. Get Detail Hook Template (`[id]/_hooks/use-get-detail-[module].ts`)
+## 8. Get Detail Hook Template (`[id]/_hooks/use-[module]-query.ts`)
 
 ```typescript
-import { getDetail[Module] } from "@/modules/[group]/[module]";
 import { useQuery } from "@tanstack/react-query";
 
-export const getDetail[Module]QueryKey = "get-[module]-detail";
+import { getDetail[Module] } from "@/api/[module]";
 
-export const useGetDetail[Module] = (id: string) => {
+export const [module]QueryKey = "get-detail-[module]";
+
+const use[Module]Query = (id: string) => {
   return useQuery({
-    queryKey: [getDetail[Module]QueryKey, id],
+    queryKey: [[module]QueryKey, { id }],
     queryFn: () => getDetail[Module]({ id }),
-    enabled: !!id,
   });
 };
+
+export default use[Module]Query;
 ```
 
-## 9. Create Mutation Hook Template (`create/_hooks/use-create-[module]-mutation.ts`)
+## 9. Create Mutation Hook Template (`create/_hooks/use-create-[module].ts`)
 
 ```typescript
 import { useMutation } from "@/app/_hooks/request/use-mutation";
-import { create[Module] } from "@/modules/[group]/[module]";
-import { useQueryClient } from "@tanstack/react-query";
-import { message } from "antd";
+import { create[Module] } from "@/api/[module]";
 
-import { get[Module]sQueryKey } from "../../_hooks/use-get-[module]s";
-import { getMutationError } from "@/utils/api-error";
-
-export const useCreate[Module]Mutation = () => {
-  const queryClient = useQueryClient();
+const useCreate[Module] = () => {
   return useMutation({
     mutationKey: ["create-[module]"],
     mutationFn: create[Module],
-    onSuccess: () => {
-      message.success("Success create [module]");
-      queryClient.invalidateQueries({ queryKey: [get[Module]sQueryKey] });
-    },
-    onError: (error) => {
-      message.error(getMutationError(error, "Failed to create [module]"));
-    },
   });
 };
+
+export default useCreate[Module];
 ```
 
-## 10. Edit Mutation Hook Template (`[id]/edit/_hooks/use-edit-[module]-mutation.ts`)
+## 10. Update Mutation Hook Template (`[id]/update/_hooks/use-update-[module]-mutation.ts`)
 
 ```typescript
 import { useMutation } from "@/app/_hooks/request/use-mutation";
-import { update[Module] } from "@/modules/[group]/[module]";
-import { T[Module]UpdateRequest } from "@/modules/[group]/[module]/type";
-import { useQueryClient } from "@tanstack/react-query";
-import { message } from "antd";
+import { update[Module] } from "@/api/[module]";
+import { T[Module]Request } from "@/api/[module]/type";
 
-import { getDetail[Module]QueryKey } from "../../_hooks/use-get-detail-[module]";
-import { get[Module]sQueryKey } from "../../../_hooks/use-get-[module]s";
-import { getMutationError } from "@/utils/api-error";
-
-export const useEdit[Module]Mutation = (id: string) => {
-  const queryClient = useQueryClient();
+const useUpdate[Module]Mutation = (id: string) => {
   return useMutation({
-    mutationKey: ["update-[module]", id],
-    mutationFn: (req: T[Module]UpdateRequest) => update[Module]({ id }, req),
-    onSuccess: () => {
-      message.success("Success update [module]");
-      queryClient.invalidateQueries({ queryKey: [get[Module]sQueryKey] });
-      queryClient.invalidateQueries({ queryKey: [getDetail[Module]QueryKey, id] });
-    },
-    onError: (error) => {
-      message.error(getMutationError(error, "Failed to update [module]"));
-    },
+    mutationKey: ["update-[module]", { id }],
+    mutationFn: (req: T[Module]Request) => update[Module]({ id }, req),
   });
 };
+
+export default useUpdate[Module]Mutation;
 ```
 
-## 11. Delete Mutation Hook Template (`_hooks/use-delete-[module].ts`)
+## 11. Delete Mutation Hook Template (`_hooks/use-delete-[module]-mutation.ts`)
 
 ```typescript
 import { useMutation } from "@/app/_hooks/request/use-mutation";
-import { delete[Module] } from "@/modules/[group]/[module]";
+import { delete[Module] } from "@/api/[module]";
 import { useQueryClient } from "@tanstack/react-query";
-import { message } from "antd";
 
-import { get[Module]sQueryKey } from "./use-get-[module]s";
-import { getMutationError } from "@/utils/api-error";
+import { [module]sQueryKey } from "./use-[module]s-query";
 
-export const useDelete[Module] = () => {
+export const delete[Module]MutationKey = "delete-[module]";
+
+const useDelete[Module]Mutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationKey: ["delete-[module]"],
+    mutationKey: [delete[Module]MutationKey],
     mutationFn: delete[Module],
     onSuccess: () => {
-      message.success("Success delete [module]");
-      queryClient.invalidateQueries({ queryKey: [get[Module]sQueryKey] });
-    },
-    onError: (error) => {
-      message.error(getMutationError(error, "Failed to delete [module]"));
+      queryClient.invalidateQueries({ queryKey: [[module]sQueryKey] });
     },
   });
 };
+
+export default useDelete[Module]Mutation;
 ```

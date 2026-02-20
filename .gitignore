@@ -46,3 +46,7 @@ tsconfig.app.tsbuildinfo
 # vite build
 vite.config.ts.timestamp*
 public/cache
+
+
+# AI Setup
+repomix

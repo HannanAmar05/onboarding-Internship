@@ -1,18 +1,18 @@
 ---
 name: api-layer-definition
-description: Define API layer (type.ts, index.ts) with proper fetcher (api/apiMock) from API documentation
+description: Define API layer (type.ts, index.ts) with proper fetcher from API documentation
 tools: Read, Write, Edit, Glob, Grep
 ---
 
 # API Layer Definition Skill
 
-Defines or updates the API layer (`type.ts`, `index.ts`) for a module by reading API documentation and configuring the appropriate fetcher.
+Defines or updates the API layer (`type.ts`, `index.ts`) for a module by reading API documentation and replacing mock data with real API calls.
 
 ## Input
 
-1. **Target Module Path**: Path to module in `src/modules/`
+1. **Target Module Path**: Path to module in `src/api/`
 2. **API Doc Path**: Path to API documentation JSON file
-3. **Fetcher**: `api` (real) or `apiMock` (mock)
+3. **Fetcher**: `api` (real, with auth) or `apiMock` (no auth) — both from `@/libs/axios/api`
 
 ## Critical Rules
 
@@ -41,9 +41,9 @@ Defines or updates the API layer (`type.ts`, `index.ts`) for a module by reading
 **Example - CORRECT:**
 ```typescript
 // Before
-{ dataIndex: "name", title: "Nama" }
+{ dataIndex: "name", title: "Name" }
 // After - only change dataIndex
-{ dataIndex: "entity_name", title: "Nama" }
+{ dataIndex: "entity_name", title: "Name" }
 ```
 
 **Example - WRONG:**
@@ -71,13 +71,16 @@ If a component uses a field that API doesn't provide:
 // API doesn't provide 'calculated_total' field
 // TODO: Backend needs to add 'calculated_total' to response
 export const getEntitiesWithTotal = async (params?: TFilter) => {
-  const response = await api.get<TApiResponsePagination<TEntity>>(ENDPOINT, { params });
+  const response = await api.get<TResponsePaginate<TEntity>>(ENDPOINT, { params });
   return {
     ...response,
-    items: response.items?.map(item => ({
-      ...item,
-      calculated_total: item.quantity * item.price, // Local calculation
-    })),
+    data: {
+      ...response.data,
+      items: response.data.items?.map(item => ({
+        ...item,
+        calculated_total: item.quantity * item.price, // Local calculation
+      })),
+    },
   };
 };
 ```
@@ -90,35 +93,38 @@ export const getEntitiesWithTotal = async (params?: TFilter) => {
 
 ## Fetcher Options
 
-### Real API (`api`)
+Both fetchers are exported from `@/libs/axios/api`:
+
+### Real API (`api`) — with auth interceptor
 
 ```typescript
-import { api } from "@/utils/fetcher-v2";
+import { api } from "@/libs/axios/api";
 
 export const getEntities = async (params?: TFilter) => {
-  return await api.get<TApiResponsePagination<TEntity>>(ENDPOINT, { params });
+  return await api.get<TResponsePaginate<TEntity>>(ENDPOINT, { params });
 };
 ```
 
-### Mock API (`apiMock`)
+### Mock API (`apiMock`) — no auth interceptor
 
 ```typescript
-import { apiMock } from "@/utils/fetcher-v2";
+import { apiMock } from "@/libs/axios/api";
 
 export const getEntities = async (params?: TFilter) => {
-  return await apiMock.get<TApiResponsePagination<TEntity>>(ENDPOINT, { params });
+  return await apiMock.get<TResponsePaginate<TEntity>>(ENDPOINT, { params });
 };
 ```
 
 ### Local Mock (Fallback)
 
+When no API endpoint exists yet:
+
 ```typescript
 const mockData: TEntity[] = [...];
 
 // TODO: Replace with real API when available
-export const getSpecialFeature = async (): Promise<TApiResponseData<TEntity[]>> => {
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  return { status_code: 200, data: mockData };
+export const getSpecialFeature = (): Promise<TResponseData<TEntity[]>> => {
+  return Promise.resolve({ status_code: 200, data: mockData, version: "1.0.0" });
 };
 ```
 
@@ -132,7 +138,7 @@ export const getSpecialFeature = async (): Promise<TApiResponseData<TEntity[]>> 
 
 ### Step 2: Analyze Existing Module
 
-1. Read current `index.ts` and `type.ts`
+1. Read current `index.ts` and `type.ts` in `src/api/[module]/`
 2. Identify exported functions and usages
 3. List features needing API support
 
@@ -142,6 +148,8 @@ export const getSpecialFeature = async (): Promise<TApiResponseData<TEntity[]>> 
 2. Use API field names as-is (e.g., `entity_name`, not `name`)
 3. Include all fields from API response
 4. Add request types for POST/PUT/PATCH endpoints
+5. Use `TFilterParams` from `@/commons/types/filter` for filter types
+6. Use `TResponsePaginate` and `TResponseData` from `@/commons/types/response`
 
 **Example:**
 ```typescript
@@ -159,16 +167,19 @@ export type TEntity = {
 
 ### Step 4: Update API Functions (`index.ts`)
 
-1. Replace mock functions with API calls
-2. Use specified fetcher (`api` or `apiMock`)
-3. **Return API response directly** - NO transformation
-4. Keep local mock for features without API
+1. Replace mock functions with API calls using `api` from `@/libs/axios/api`
+2. **Return API response directly** - NO transformation
+3. Keep local mock for features without API
 
 **Example:**
 ```typescript
+import { api } from "@/libs/axios/api";
+
+const ENDPOINT = "/api/v1/entities";
+
 // ✅ CORRECT - Return as-is
 export const getEntities = async (params?: TFilter) => {
-  return await api.get<TApiResponsePagination<TEntity>>(ENDPOINT, { params });
+  return await api.get<TResponsePaginate<TEntity>>(ENDPOINT, { params });
 };
 
 // ❌ WRONG - Don't transform
@@ -176,7 +187,7 @@ export const getEntities = async (params?: TFilter) => {
   const response = await api.get<...>(ENDPOINT, { params });
   return {
     ...response,
-    items: response.items?.map(transformToFrontend) ?? [], // DON'T DO THIS
+    data: { items: response.data.items?.map(transformToFrontend) ?? [] }, // DON'T DO THIS
   };
 };
 ```
@@ -185,7 +196,7 @@ export const getEntities = async (params?: TFilter) => {
 
 Search and update all files using this module's types/functions:
 
-1. **Find usages**: `grep -r "from '@/modules/[module-path]'" src/`
+1. **Find usages**: `grep -r "from '@/api/[module]'" src/`
 2. **Update field references** in components:
    - `record.name` → `record.entity_name`
    - `record.id` → `record.entity_id`
@@ -195,10 +206,10 @@ Search and update all files using this module's types/functions:
 5. **Update form field names** to match API
 
 **Files to check:**
-- `src/app/**/page.tsx` - List/Detail/Create/Edit pages
-- `src/app/**/_components/form/index.tsx` - Form components
-- `src/app/**/_components/form/schema.ts` - Zod schemas
-- `src/app/**/_hooks/*.ts` - Custom hooks
+- `src/app/(protected)/**/page.tsx` - List/Detail/Create/Update pages
+- `src/app/(protected)/**/_components/form/index.tsx` - Form components
+- `src/app/(protected)/**/_components/form/schema.ts` - Zod schemas
+- `src/app/(protected)/**/_hooks/*.ts` - Custom hooks
 
 ### Step 6: Fix Type Errors
 
@@ -212,7 +223,7 @@ Search and update all files using this module's types/functions:
 - [ ] Read referenced schemas
 - [ ] Preserve existing features
 - [ ] Update `type.ts` with exact API schema
-- [ ] Update `index.ts` with correct fetcher (NO transformation)
+- [ ] Update `index.ts` with `api` from `@/libs/axios/api` (NO transformation)
 - [ ] Keep local mock for missing endpoints
 - [ ] Update components to use API field names
 - [ ] Update form schemas to match API
@@ -221,7 +232,7 @@ Search and update all files using this module's types/functions:
 
 ## Standards
 
-- **Imports**: `@/commons/types/api`, `@/utils/fetcher-v2`
+- **Imports**: `@/commons/types/response`, `@/commons/types/filter`, `@/libs/axios/api` (`api` or `apiMock`)
 - **Types**: Prefix with `T` (e.g., `TEntityResponse`)
 - **Functions**: camelCase (e.g., `getEntities`)
 - **Mock Comments**: `// TODO: Replace with real API when available`

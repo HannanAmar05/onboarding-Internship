@@ -6,45 +6,40 @@ This directory contains examples for different API integration scenarios.
 
 | Example | Fetcher | Use Case |
 |---------|---------|----------|
-| [example-api-mock.md](./example-api-mock.md) | `apiMock` | BE mock endpoint (development) |
-| [example-api-real.md](./example-api-real.md) | `api` | Production endpoint |
+| [example-api-real.md](./example-api-real.md) | `api` | Real API endpoint (with auth) |
+| [example-api-mock.md](./example-api-mock.md) | `apiMock` | Backend mock server (no auth) |
 | [example-local-mock.md](./example-local-mock.md) | Local | No API endpoint available |
 
 ## Quick Reference
 
-### 1. API Mock (`apiMock`)
-
-Use when connecting to Backend mock server for development/testing.
+### Real API (`api` — with auth interceptor)
 
 ```typescript
-import { apiMock } from "@/utils/fetcher-v2";
+import { api } from "@/libs/axios/api";
 
 export const getEntities = async (params?: TFilter) => {
-  return await apiMock.get<TApiResponsePagination<TEntity>>(ENDPOINT, { params });
+  return await api.get<TResponsePaginate<TEntity>>(ENDPOINT, { params });
 };
 ```
 
-### 2. Real API (`api`)
-
-Use when connecting to production Backend server.
+### Mock API (`apiMock` — no auth interceptor)
 
 ```typescript
-import { api } from "@/utils/fetcher-v2";
+import { apiMock } from "@/libs/axios/api";
 
 export const getEntities = async (params?: TFilter) => {
-  return await api.get<TApiResponsePagination<TEntity>>(ENDPOINT, { params });
+  return await apiMock.get<TResponsePaginate<TEntity>>(ENDPOINT, { params });
 };
 ```
 
-### 3. Local Mock (Fallback)
+### Local Mock (Fallback)
 
 Use when API endpoint is not available yet but UI feature must work.
 
 ```typescript
 // TODO: Replace with real API when available
-export const getFeature = async (params: { id: string }): Promise<TApiResponseData<TFeature>> => {
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  return { status_code: 200, data: mockData };
+export const getFeature = (params: { id: string }): Promise<TResponseData<TFeature>> => {
+  return Promise.resolve({ status_code: 200, data: mockData, version: "1.0.0" });
 };
 ```
 

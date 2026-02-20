@@ -11,22 +11,23 @@ Scans `docs/api/modules/` and updates `MIGRATION.md` with API documentation mapp
 1. **List API Documentation Files**:
    - Read all JSON files in `docs/api/modules/`
    - Display the list of available API documentation
+   - If `docs/api/modules/` doesn't exist, report it and skip to step 3
 
 2. **Update API Doc File Column**:
    - Match module names to API doc file names using the mapping below
    - Update the `API Doc File` column in `MIGRATION.md`
 
 3. **Check API Integration Status & Type**:
-   - For each module, check `src/modules/[group]/[module]/index.ts`
+   - For each module, check `src/api/[module]/index.ts`
    - Set **API Integration** status:
      - `Done` - All endpoints integrated with real/mock API
      - `Integrating` - Partial API integration (some endpoints converted)
-     - `Pending` - Not yet integrated
+     - `Pending` - Not yet integrated (still using local mock)
      - `N/A` - No API documentation available
    - Set **API Type** based on fetcher used:
-     - `Real` - Uses `api` from `@/utils/fetcher-v2` (production endpoint)
-     - `Mock` - Uses `apiMock` from `@/utils/fetcher-v2` (BE mock endpoint)
-     - `Local` - Uses local mock data in `index.ts` (no endpoint hit)
+     - `Real` - Uses `api` from `@/libs/axios/api` (production endpoint with auth)
+     - `Mock` - Uses `apiMock` from `@/libs/axios/api` (BE mock endpoint, no auth)
+     - `Local` - Uses local mock data with `Promise.resolve` (no endpoint hit)
      - `-` - Not yet integrated
 
 4. **Report Unmapped API Docs**:
@@ -48,42 +49,61 @@ Scans `docs/api/modules/` and updates `MIGRATION.md` with API documentation mapp
 
 ### Real API (API Type: `Real`)
 ```typescript
-// Uses `api` constant from @/utils/fetcher-v2
-import { api } from "@/utils/fetcher-v2";
+// Uses `api` from @/libs/axios/api (with auth interceptor)
+import { api } from "@/libs/axios/api";
 
-export const getEntities = async (params) => {
-  return await api.get(ENDPOINTS.ENTITIES, { params });
+const ENDPOINT = "/api/v1/entities";
+
+export const getEntities = async (params?: TFilterEntity) => {
+  return await api.get<TResponsePaginate<TEntity>>(ENDPOINT, { params });
 };
 ```
 
 ### Mock API (API Type: `Mock`)
 ```typescript
-// Uses `apiMock` constant from @/utils/fetcher-v2 (hits BE mock endpoint)
-import { apiMock } from "@/utils/fetcher-v2";
+// Uses `apiMock` from @/libs/axios/api (no auth interceptor)
+import { apiMock } from "@/libs/axios/api";
 
-export const getEntities = async (params) => {
-  return await apiMock.get(ENDPOINTS.ENTITIES, { params });
+const ENDPOINT = "/api/v1/entities";
+
+export const getEntities = async (params?: TFilterEntity) => {
+  return await apiMock.get<TResponsePaginate<TEntity>>(ENDPOINT, { params });
 };
 ```
 
 ### Local Mock (API Type: `Local`)
 ```typescript
-// Local mock data - no endpoint hit
-const mockData = [...];
+// Local mock data - no endpoint hit, uses Promise.resolve
+const mockData: TEntity[] = [...];
 
-export const getEntities = async () => {
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  return { status_code: 200, data: mockData };
+export const getEntities = (params: TFilterEntity): Promise<TEntityListResponse> => {
+  console.log(params);
+  return Promise.resolve({
+    status_code: 200,
+    data: {
+      items: mockData,
+      meta: { total_page: 1, total: 2, page: 1, per_page: 10 },
+    },
+    version: "1.0.0",
+  });
 };
 ```
 
 ### Mixed Usage (API Integration: `Integrating`)
 ```typescript
 // Some functions use real/mock API, others use local mock
-import { api } from "@/utils/fetcher-v2";
+import { api } from "@/libs/axios/api";
 
-export const getList = async () => api.get(ENDPOINT); // Real API
-export const exportData = async () => localMockExport; // Local mock
+const ENDPOINT = "/api/v1/entities";
+
+export const getEntities = async (params?: TFilterEntity) => {
+  return await api.get<TResponsePaginate<TEntity>>(ENDPOINT, { params });
+};
+
+// TODO: Replace with real API when available
+export const exportEntities = (): Promise<TResponseData<null>> => {
+  return Promise.resolve({ status_code: 200, data: null, version: "1.0.0" });
+};
 ```
 
 ## Output

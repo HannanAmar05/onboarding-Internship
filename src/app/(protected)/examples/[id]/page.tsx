@@ -1,19 +1,22 @@
+import { useState } from "react";
 import { Button, ConfigProvider, Descriptions, Flex, message, Space, Tag, Typography } from "antd";
 import { generatePath, useNavigate, useParams } from "react-router";
 import { Page, Section } from "admiral";
 import { DescriptionsProps } from "antd/lib";
+import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 
 import { ROUTES } from "@/commons/constants/routes";
+import { formatDate } from "@/utils/date-format";
+import ModalAction from "@/app/_components/ui/modals/modal-action";
 
 import useFaqQuery from "./_hooks/use-faq-query";
-import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import useDeleteFaqMutation from "../_hooks/use-delete-faq-mutation";
 import getFaqStatus from "../_utils/faq-tag";
-import { formatDate } from "@/utils/date-format";
 
 export const Component = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const detailQuery = useFaqQuery(id || "");
   const deleteMutation = useDeleteFaqMutation();
   const data = detailQuery.data;
@@ -74,17 +77,7 @@ export const Component = () => {
         <Flex gap={8}>
           <Button
             loading={deleteMutation.isPending}
-            onClick={() => {
-              deleteMutation.mutate(
-                { id: id || "" },
-                {
-                  onSuccess: () => {
-                    message.success("Faq berhasil dihapus");
-                    navigate(-1);
-                  },
-                },
-              );
-            }}
+            onClick={() => setShowDeleteModal(true)}
             danger
             icon={<DeleteOutlined />}
           >
@@ -132,6 +125,20 @@ export const Component = () => {
           </Section>
         </Space>
       </Section>
+
+      <ModalAction
+        type="delete"
+        title="Delete FAQ"
+        description="Are you sure you want to delete this FAQ? This action cannot be undone."
+        open={showDeleteModal}
+        onCancel={() => setShowDeleteModal(false)}
+        onOk={async () => {
+          await deleteMutation.mutateAsync({ id: id || "" });
+          message.success("FAQ deleted successfully");
+          setShowDeleteModal(false);
+          navigate(ROUTES.faq.list);
+        }}
+      />
     </Page>
   );
 };

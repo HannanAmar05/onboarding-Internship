@@ -3,7 +3,7 @@ import { z } from "zod";
 
 export const FAQSchema = z.object({
   category: z
-    .string({ message: "Categoy is required" })
+    .string({ message: "Category is required" })
     .min(1, { message: "Category is required" }),
   question: z
     .string({ message: "Question is required" })

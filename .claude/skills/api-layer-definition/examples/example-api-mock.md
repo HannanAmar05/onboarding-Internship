@@ -1,16 +1,15 @@
 # Example: API Mock Integration
 
-This example shows how to integrate using `apiMock` (BE mock endpoint).
+This example shows how to integrate using `apiMock` from `@/libs/axios/api` — a separate axios instance without auth interceptors, useful for connecting to a backend mock server during development.
 
 ## Request
 
-"Integrate the Data Uploads API into `src/modules/management-reports/data-uploads` using `apiMock`."
+"Integrate the Data Uploads API into `src/api/data-uploads` using `apiMock`."
 
 ## Input
 
-- **MODULE_PATH**: `management-reports/data-uploads`
+- **MODULE_PATH**: `src/api/data-uploads`
 - **API_DOC_PATH**: `docs/api/modules/DataUploads.json`
-- **FETCHER**: `apiMock`
 
 ## Execution
 
@@ -22,17 +21,17 @@ This example shows how to integrate using `apiMock` (BE mock endpoint).
   "endpoints": [
     {
       "method": "GET",
-      "path": "/mreport/api/v1/data-uploads",
+      "path": "/api/v1/data-uploads",
       "response": { "$ref": "../schemas/DataUploadListResponse.json" }
     },
     {
       "method": "GET",
-      "path": "/mreport/api/v1/data-uploads/{id}",
+      "path": "/api/v1/data-uploads/{id}",
       "response": { "$ref": "../schemas/DataUploadDetailResponse.json" }
     },
     {
       "method": "POST",
-      "path": "/mreport/api/v1/data-uploads",
+      "path": "/api/v1/data-uploads",
       "request": { "$ref": "../schemas/DataUploadRequest.json" }
     }
   ]
@@ -63,8 +62,9 @@ This example shows how to integrate using `apiMock` (BE mock endpoint).
 ### 3. Generate `type.ts`
 
 ```typescript
-// src/modules/management-reports/data-uploads/type.ts
-import { TApiResponseData, TApiResponsePagination, TQueryParams } from "@/commons/types/api";
+// src/api/data-uploads/type.ts
+import { TFilterParams } from "@/commons/types/filter";
+import { TResponseData, TResponsePaginate } from "@/commons/types/response";
 
 // Exact match with API response - NO transformation
 export type TDataUpload = {
@@ -91,47 +91,46 @@ export type TDataUploadRequest = {
 };
 
 // Filter type for GET list
-export type TFilterDataUpload = TQueryParams & {
+export type TFilterDataUpload = TFilterParams<{
   file_name?: string;
   description_id?: string;
   period_year?: number;
   status?: number;
-};
+}>;
+
+export type TDataUploadListResponse = TResponsePaginate<TDataUpload>;
+export type TDataUploadDetailResponse = TResponseData<TDataUpload>;
 ```
 
 ### 4. Generate `index.ts`
 
 ```typescript
-// src/modules/management-reports/data-uploads/index.ts
-import { apiMock } from "@/utils/fetcher-v2";  // ← Using apiMock
-import { TApiResponseData, TApiResponsePagination } from "@/commons/types/api";
+// src/api/data-uploads/index.ts
+import { apiMock } from "@/libs/axios/api";  // ← Using apiMock (no auth interceptor)
+import { TResponseData, TResponsePaginate } from "@/commons/types/response";
 import { TDataUpload, TDataUploadRequest, TFilterDataUpload } from "./type";
 
-const ENDPOINT = "/mreport/api/v1/data-uploads";
-
-// Query key for cache invalidation
-export const getDataUploadsQueryKey = "get-data-uploads";
-export const getDataUploadDetailQueryKey = "get-data-upload-detail";
+const ENDPOINT = "/api/v1/data-uploads";
 
 // ✅ Return as-is - NO transformation
 export const getDataUploads = async (params?: TFilterDataUpload) => {
-  return await apiMock.get<TApiResponsePagination<TDataUpload>>(ENDPOINT, { params });
+  return await apiMock.get<TResponsePaginate<TDataUpload>>(ENDPOINT, { params });
 };
 
-export const getDataUploadById = async (params: { id: string }) => {
-  return await apiMock.get<TApiResponseData<TDataUpload>>(`${ENDPOINT}/${params.id}`);
+export const getDetailDataUpload = async (params: { id: string }) => {
+  return await apiMock.get<TResponseData<TDataUpload>>(`${ENDPOINT}/${params.id}`);
 };
 
 export const createDataUpload = async (data: TDataUploadRequest) => {
-  return await apiMock.post<TApiResponseData<TDataUpload>>(ENDPOINT, data);
+  return await apiMock.post<TResponseData<TDataUpload>>(ENDPOINT, data);
 };
 
 export const updateDataUpload = async (params: { id: string }, data: TDataUploadRequest) => {
-  return await apiMock.put<TApiResponseData<TDataUpload>>(`${ENDPOINT}/${params.id}`, data);
+  return await apiMock.put<TResponseData<TDataUpload>>(`${ENDPOINT}/${params.id}`, data);
 };
 
 export const deleteDataUpload = async (params: { id: string }) => {
-  return await apiMock.delete<TApiResponseData<string>>(`${ENDPOINT}/${params.id}`);
+  return await apiMock.delete<TResponseData<null>>(`${ENDPOINT}/${params.id}`);
 };
 ```
 
@@ -139,7 +138,7 @@ export const deleteDataUpload = async (params: { id: string }) => {
 
 **Table columns** - use API field names:
 ```typescript
-// src/app/(authenticated)/management-reports/data-uploads/page.tsx
+// src/app/(protected)/data-uploads/page.tsx
 const columns: ColumnsType<TDataUpload> = [
   { dataIndex: "file_name", title: "File Name", sorter: true },
   { dataIndex: "table_name", title: "Table Name", sorter: true },
@@ -159,51 +158,31 @@ const columns: ColumnsType<TDataUpload> = [
 
 **Form schema** - match API request:
 ```typescript
-// src/app/(authenticated)/management-reports/data-uploads/_components/form/schema.ts
+// src/app/(protected)/data-uploads/_components/form/schema.ts
 import { z } from "zod";
 
-export const Schema = z.object({
-  file_name: z.string().min(1, "Nama file wajib diisi"),
-  file_path: z.string().min(1, "Path file wajib diisi"),
-  description_id: z.string().min(1, "Deskripsi wajib dipilih"),
-  table_name: z.string().min(1, "Nama tabel wajib diisi"),
-  period_year: z.number().min(2000, "Tahun tidak valid"),
-  period_month: z.number().min(1).max(12, "Bulan tidak valid"),
+export const DataUploadSchema = z.object({
+  file_name: z.string().min(1, "File name is required"),
+  file_path: z.string().min(1, "File path is required"),
+  description_id: z.string().min(1, "Description is required"),
+  table_name: z.string().min(1, "Table name is required"),
+  period_year: z.number().min(2000, "Invalid year"),
+  period_month: z.number().min(1).max(12, "Invalid month"),
 });
 
-export type TFormData = z.infer<typeof Schema>;
-```
-
-**Form fields** - use API field names:
-```typescript
-// src/app/(authenticated)/management-reports/data-uploads/_components/form/index.tsx
-<Form.Item name="file_name" label="Nama File" rules={[rule]}>
-  <Input placeholder="Masukkan nama file" />
-</Form.Item>
-
-<Form.Item name="description_id" label="Deskripsi" rules={[rule]}>
-  <Select placeholder="Pilih deskripsi" options={descriptionOptions} />
-</Form.Item>
-
-<Form.Item name="table_name" label="Nama Tabel" rules={[rule]}>
-  <Input placeholder="Masukkan nama tabel" />
-</Form.Item>
-
-<Form.Item name="period_year" label="Tahun" rules={[rule]}>
-  <InputNumber style={{ width: "100%" }} />
-</Form.Item>
+export type TDataUploadFormData = z.infer<typeof DataUploadSchema>;
 ```
 
 ### 6. Verify
 
 ```bash
 npx tsc --noEmit  # No errors
-pnpm run lint     # No errors
+pnpm run build    # No errors
 ```
 
 ## Key Points
 
-1. **Fetcher**: `apiMock` - connects to BE mock endpoint
+1. **Fetcher**: `apiMock` from `@/libs/axios/api` - no auth interceptor, for backend mock server
 2. **Types**: Exact match with API schema (`file_name`, `description_id`, etc.)
 3. **No transformation**: API response returned as-is
 4. **Components adapted**: All field names match API
