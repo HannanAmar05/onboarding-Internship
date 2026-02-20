@@ -5,7 +5,8 @@
 Types must **exactly match** API response schema - no transformation.
 
 ```typescript
-import { TApiResponseData, TApiResponsePagination, TQueryParams } from "@/commons/types/api";
+import { TFilterParams } from "@/commons/types/filter";
+import { TResponseData, TResponsePaginate } from "@/commons/types/response";
 
 // [GENERATED TYPES]
 // Map JSON schemas to TypeScript interfaces here.
@@ -27,10 +28,13 @@ export type T[Entity]Request = {
 };
 
 // Filter type for GET list
-export type TFilter[Entity] = TQueryParams & {
+export type TFilter[Entity] = TFilterParams<{
   entity_name?: string;
   is_active?: boolean;
-};
+}>;
+
+export type T[Entity]ListResponse = TResponsePaginate<T[Entity]>;
+export type T[Entity]DetailResponse = TResponseData<T[Entity]>;
 ```
 
 ## index.ts
@@ -38,8 +42,8 @@ export type TFilter[Entity] = TQueryParams & {
 Return API response directly - **NO transformation**.
 
 ```typescript
-import { api } from "@/utils/fetcher-v2";
-import { TApiResponseData, TApiResponsePagination } from "@/commons/types/api";
+import { api } from "@/libs/axios/api";
+import { TResponseData, TResponsePaginate } from "@/commons/types/response";
 import {
   T[Entity],
   T[Entity]Request,
@@ -50,23 +54,23 @@ const ENDPOINT = "/api/v1/[resource]";
 
 // ✅ CORRECT - Return as-is
 export const get[Entity]s = async (params?: TFilter[Entity]) => {
-  return await api.get<TApiResponsePagination<T[Entity]>>(ENDPOINT, { params });
+  return await api.get<TResponsePaginate<T[Entity]>>(ENDPOINT, { params });
 };
 
-export const get[Entity]ById = async (params: { id: string }) => {
-  return await api.get<TApiResponseData<T[Entity]>>(`${ENDPOINT}/${params.id}`);
+export const getDetail[Entity] = async (params: { id: string }) => {
+  return await api.get<TResponseData<T[Entity]>>(`${ENDPOINT}/${params.id}`);
 };
 
 export const create[Entity] = async (payload: T[Entity]Request) => {
-  return await api.post<TApiResponseData<T[Entity]>>(ENDPOINT, payload);
+  return await api.post<TResponseData<T[Entity]>>(ENDPOINT, payload);
 };
 
 export const update[Entity] = async (params: { id: string }, payload: T[Entity]Request) => {
-  return await api.put<TApiResponseData<T[Entity]>>(`${ENDPOINT}/${params.id}`, payload);
+  return await api.put<TResponseData<T[Entity]>>(`${ENDPOINT}/${params.id}`, payload);
 };
 
 export const delete[Entity] = async (params: { id: string }) => {
-  return await api.delete<TApiResponseData<string>>(`${ENDPOINT}/${params.id}`);
+  return await api.delete<TResponseData<null>>(`${ENDPOINT}/${params.id}`);
 };
 
 // ❌ WRONG - Don't do this
@@ -74,7 +78,7 @@ export const delete[Entity] = async (params: { id: string }) => {
 //   const response = await api.get<...>(ENDPOINT, { params });
 //   return {
 //     ...response,
-//     items: response.items?.map(transformToFrontend) ?? [],
+//     data: { items: response.data.items?.map(transformToFrontend) ?? [] },
 //   };
 // };
 ```

@@ -38,9 +38,9 @@ You are an API Integration Agent specialized in connecting frontend modules with
 **Example - CORRECT:**
 ```typescript
 // Before
-{ dataIndex: "name", title: "Nama" }
+{ dataIndex: "name", title: "Name" }
 // After - only change dataIndex
-{ dataIndex: "entity_name", title: "Nama" }
+{ dataIndex: "entity_name", title: "Name" }
 ```
 
 **Example - WRONG:**
@@ -70,25 +70,26 @@ If a component uses a field that API doesn't provide:
 ```typescript
 // API doesn't provide 'calculated_total' field
 // TODO: Backend needs to add 'calculated_total' to response
-export const getEntitiesWithTotal = async (params?: TFilter) => {
-  const response = await api.get<TApiResponsePagination<TEntity>>(ENDPOINT, { params });
-
-  // Add missing field with local calculation
+export const getEntitiesWithTotal = async (params?: TFilterEntity) => {
+  const response = await api.get<TResponsePaginate<TEntity>>(ENDPOINT, { params });
   return {
     ...response,
-    items: response.items?.map(item => ({
-      ...item,
-      calculated_total: item.quantity * item.price, // Local calculation
-    })),
+    data: {
+      ...response.data,
+      items: response.data.items?.map(item => ({
+        ...item,
+        calculated_total: item.quantity * item.price, // Local calculation
+      })),
+    },
   };
 };
 ```
 
 ## Inputs
 
-- `MODULE_PATH`: Path to module in `src/modules/` (e.g., `management-reports/data-uploads`)
+- `MODULE_PATH`: Path to module in `src/api/` (e.g., `src/api/data-uploads`)
 - `API_DOC_PATH`: Path to API documentation file (e.g., `docs/api/modules/DataUploads.json`)
-- `FETCHER`: `api` (real) or `apiMock` (mock)
+- `FETCHER`: `api` (real, with auth) or `apiMock` (mock, no auth) — both from `@/libs/axios/api`
 
 ## Execution Steps
 
@@ -104,8 +105,8 @@ export const getEntitiesWithTotal = async (params?: TFilter) => {
 
 ### Step 2: Analyze Current Module
 
-1. Read `src/modules/[MODULE_PATH]/type.ts`
-2. Read `src/modules/[MODULE_PATH]/index.ts`
+1. Read `[MODULE_PATH]/type.ts`
+2. Read `[MODULE_PATH]/index.ts`
 3. Identify current type definitions and API functions
 4. Note field name differences between current types and API schema
 
@@ -118,6 +119,12 @@ export const getEntitiesWithTotal = async (params?: TFilter) => {
 3. Include all fields from API response
 4. Add request types for POST/PUT/PATCH endpoints
 5. Add filter types for GET list endpoints
+
+**Imports:**
+```typescript
+import { TFilterParams } from "@/commons/types/filter";
+import { TResponseData, TResponsePaginate } from "@/commons/types/response";
+```
 
 **Example**:
 ```typescript
@@ -136,33 +143,50 @@ export type TEntityRequest = {
   is_active: boolean;
 };
 
-export type TFilterEntity = TQueryParams & {
+export type TFilterEntity = TFilterParams<{
   entity_name?: string;
   is_active?: boolean;
-};
+}>;
+
+export type TEntityListResponse = TResponsePaginate<TEntity>;
+export type TEntityDetailResponse = TResponseData<TEntity>;
 ```
 
 ### Step 4: Update API Functions (`index.ts`)
 
-1. Update imports to use specified `FETCHER` (`api` or `apiMock`)
+1. Update imports to use specified `FETCHER` (`api` or `apiMock`) from `@/libs/axios/api`
 2. Update endpoints from API documentation
 3. Return API response directly - **NO transformation**
 4. Keep local mock for features without API endpoint
 
 **Example**:
 ```typescript
-import { api } from "@/utils/fetcher-v2"; // or apiMock
-import { TApiResponseData, TApiResponsePagination } from "@/commons/types/api";
+import { api } from "@/libs/axios/api"; // or apiMock
+import { TResponseData, TResponsePaginate } from "@/commons/types/response";
+import { TEntity, TEntityRequest, TFilterEntity } from "./type";
 
 const ENDPOINT = "/api/v1/entities";
 
 // ✅ CORRECT - Return as-is
 export const getEntities = async (params?: TFilterEntity) => {
-  return await api.get<TApiResponsePagination<TEntity>>(ENDPOINT, { params });
+  return await api.get<TResponsePaginate<TEntity>>(ENDPOINT, { params });
 };
 
-// ❌ WRONG - No transformation
-// return { ...response, items: response.items?.map(transform) };
+export const getDetailEntity = async (params: { id: string }) => {
+  return await api.get<TResponseData<TEntity>>(`${ENDPOINT}/${params.id}`);
+};
+
+export const createEntity = async (data: TEntityRequest) => {
+  return await api.post<TResponseData<TEntity>>(ENDPOINT, data);
+};
+
+export const updateEntity = async (params: { id: string }, data: TEntityRequest) => {
+  return await api.put<TResponseData<TEntity>>(`${ENDPOINT}/${params.id}`, data);
+};
+
+export const deleteEntity = async (params: { id: string }) => {
+  return await api.delete<TResponseData<null>>(`${ENDPOINT}/${params.id}`);
+};
 ```
 
 ### Step 5: Find Dependent Files
@@ -170,17 +194,19 @@ export const getEntities = async (params?: TFilterEntity) => {
 Search for all files importing from this module:
 
 ```bash
-grep -r "from ['\"]@/modules/[MODULE_PATH]" src/
+grep -r "from ['\"]@/api/[module-name]" src/
 ```
 
 Typical files to update:
-- `src/app/(authenticated)/[path]/page.tsx` - List page
-- `src/app/(authenticated)/[path]/[id]/page.tsx` - Detail page
-- `src/app/(authenticated)/[path]/create/page.tsx` - Create page
-- `src/app/(authenticated)/[path]/[id]/edit/page.tsx` - Edit page
-- `src/app/(authenticated)/[path]/_components/form/index.tsx` - Form component
-- `src/app/(authenticated)/[path]/_components/form/schema.ts` - Zod schema
-- `src/app/(authenticated)/[path]/_hooks/*.ts` - Query/Mutation hooks
+- `src/app/(protected)/[module]/page.tsx` - List page
+- `src/app/(protected)/[module]/[id]/page.tsx` - Detail page
+- `src/app/(protected)/[module]/create/page.tsx` - Create page
+- `src/app/(protected)/[module]/[id]/update/page.tsx` - Update page
+- `src/app/(protected)/[module]/_components/form/index.tsx` - Form component
+- `src/app/(protected)/[module]/_components/form/schema.ts` - Zod schema
+- `src/app/(protected)/[module]/_hooks/*.ts` - Query hooks
+- `src/app/(protected)/[module]/create/_hooks/*.ts` - Create mutation hooks
+- `src/app/(protected)/[module]/[id]/update/_hooks/*.ts` - Update mutation hooks
 
 ### Step 6: Update Components
 
@@ -206,13 +232,13 @@ Update Zod schema to match API request structure:
 ```typescript
 // Before
 const Schema = z.object({
-  name: z.string().min(1, "Nama wajib diisi"),
+  name: z.string().min(1, "Name is required"),
   status: z.enum(["Active", "Inactive"]),
 });
 
 // After - match API request
 const Schema = z.object({
-  entity_name: z.string().min(1, "Nama wajib diisi"),
+  entity_name: z.string().min(1, "Name is required"),
   is_active: z.boolean(),
 });
 ```
@@ -224,14 +250,14 @@ Update column definitions to use API field names:
 ```typescript
 // Before
 const columns = [
-  { dataIndex: "name", title: "Nama" },
+  { dataIndex: "name", title: "Name" },
   { dataIndex: "status", title: "Status" },
 ];
 
 // After
 const columns = [
-  { dataIndex: "entity_name", title: "Nama" },
-  { dataIndex: "is_active", title: "Status", render: (val) => val ? "Active" : "Inactive" },
+  { dataIndex: "entity_name", title: "Name" },
+  { dataIndex: "is_active", title: "Status", render: (val: boolean) => val ? "Active" : "Inactive" },
 ];
 ```
 
@@ -241,11 +267,11 @@ Update form field `name` props to match schema:
 
 ```typescript
 // Before
-<Form.Item name="name" label="Nama">
+<Form.Item name="name" label="Name">
 <Form.Item name="status" label="Status">
 
 // After
-<Form.Item name="entity_name" label="Nama">
+<Form.Item name="entity_name" label="Name">
 <Form.Item name="is_active" label="Status">
 ```
 
@@ -284,11 +310,11 @@ After completion, provide a summary:
 - DELETE /api/v1/entities/:id (delete)
 
 ### Files Updated:
-- src/modules/[path]/type.ts
-- src/modules/[path]/index.ts
-- src/app/.../page.tsx
-- src/app/.../_components/form/index.tsx
-- src/app/.../_components/form/schema.ts
+- src/api/[module]/type.ts
+- src/api/[module]/index.ts
+- src/app/(protected)/[module]/page.tsx
+- src/app/(protected)/[module]/_components/form/index.tsx
+- src/app/(protected)/[module]/_components/form/schema.ts
 - [other files...]
 
 ### Field Mappings:
@@ -309,9 +335,13 @@ If a feature exists in UI but has no API endpoint:
 
 ```typescript
 // TODO: Replace with real API when available
-export const getSpecialFeature = async (): Promise<TApiResponseData<TFeature[]>> => {
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  return { status_code: 200, data: mockData };
+// Endpoint needed: GET /api/v1/entities/export
+export const exportEntities = (): Promise<TResponseData<null>> => {
+  return Promise.resolve({
+    status_code: 200,
+    data: null,
+    version: "1.0.0",
+  });
 };
 ```
 
@@ -324,9 +354,9 @@ If API returns different type than expected (e.g., `number` instead of `string`)
 
 ## Standards
 
-- **Imports**: `@/commons/types/api`, `@/utils/fetcher-v2`
+- **Imports**: `@/commons/types/response`, `@/commons/types/filter`, `@/libs/axios/api`
 - **Types**: Prefix with `T` (e.g., `TEntity`, `TEntityRequest`)
 - **Functions**: camelCase (e.g., `getEntities`, `createEntity`)
 - **Field Names**: Use API field names exactly as documented
 - **Comments**: Add `// TODO:` for features without API
-- **Messages**: Indonesian for user-facing text
+- **Labels**: English for all user-facing text

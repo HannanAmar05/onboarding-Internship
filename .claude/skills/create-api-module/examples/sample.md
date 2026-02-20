@@ -1,11 +1,11 @@
-# Sample: Entity Districts Module
+# Sample: Holidays Module
 
-Complete example of an API module for managing entity districts, placed in the `management-reports` group.
+Complete example of an API module for managing holidays.
 
 ## Folder Structure
 
 ```
-src/modules/management-reports/entity-districts/
+src/api/holidays/
 ├── type.ts
 └── index.ts
 ```
@@ -15,43 +15,35 @@ src/modules/management-reports/entity-districts/
 ## type.ts
 
 ```typescript
-import { TApiResponseData, TApiResponsePagination, TQueryParams } from "@/commons/types/api";
+import { TFilterParams } from "@/commons/types/filter";
+import { TResponseData, TResponsePaginate } from "@/commons/types/response";
 
-export type TEntityDistrictStatus = 0 | 1;
+export type THolidayStatus = "active" | "inactive";
 
-export type TEntityDistrict = {
+export type THoliday = {
   id: string;
-  entity: string;
-  district: string;
+  name: string;
+  date: string;
   description: string;
-  row_status: TEntityDistrictStatus;
+  status: THolidayStatus;
   created_at?: string | null;
   updated_at?: string | null;
+  deleted_at?: string | null;
 };
 
-export type TEntityDistrictCreateRequest = {
-  entity: string;
-  district: string;
+export type THolidayRequest = {
+  name: string;
+  date: string;
   description: string;
-  row_status?: TEntityDistrictStatus;
+  status?: THolidayStatus;
 };
 
-export type TEntityDistrictUpdateRequest = {
-  entity: string;
-  district: string;
-  description: string;
-  row_status: TEntityDistrictStatus;
-};
+export type TFilterHoliday = TFilterParams<{
+  status?: THolidayStatus;
+}>;
 
-export type TFilterEntityDistrict = TQueryParams & {
-  entity?: string;
-  district?: string;
-  row_status?: TEntityDistrictStatus;
-};
-
-export type TEntityDistrictListResponse = TApiResponsePagination<TEntityDistrict>;
-export type TEntityDistrictDetailResponse = TApiResponseData<TEntityDistrict>;
-export type TEntityDistrictMutationResponse = TApiResponseData<string>;
+export type THolidayListResponse = TResponsePaginate<THoliday>;
+export type THolidayDetailResponse = TResponseData<THoliday>;
 ```
 
 ---
@@ -59,122 +51,108 @@ export type TEntityDistrictMutationResponse = TApiResponseData<string>;
 ## index.ts
 
 ```typescript
+import { TResponseData } from "@/commons/types/response";
 import {
-  TFilterEntityDistrict,
-  TEntityDistrict,
-  TEntityDistrictCreateRequest,
-  TEntityDistrictDetailResponse,
-  TEntityDistrictListResponse,
-  TEntityDistrictMutationResponse,
-  TEntityDistrictUpdateRequest,
+  TFilterHoliday,
+  THoliday,
+  THolidayRequest,
+  THolidayDetailResponse,
+  THolidayListResponse,
 } from "./type";
 
-const listEntityDistricts: TEntityDistrict[] = [
+const listHolidays: THoliday[] = [
   {
     id: "1",
-    entity: "PAMA",
-    district: "PAMA",
-    description: "PT. PAMA PERSADA NUSANTARA",
-    row_status: 1,
+    name: "New Year's Day",
+    date: "2024-01-01T00:00:00.000Z",
+    description: "New Year's Day celebration",
+    status: "active",
     created_at: "2023-10-01T00:00:00.000Z",
     updated_at: "2023-10-01T00:00:00.000Z",
+    deleted_at: null,
   },
   {
     id: "2",
-    entity: "PAMA",
-    district: "Sangatta",
-    description: "Site Sangatta",
-    row_status: 1,
+    name: "Independence Day",
+    date: "2024-08-17T00:00:00.000Z",
+    description: "Independence Day celebration",
+    status: "active",
     created_at: "2023-10-01T00:00:00.000Z",
     updated_at: "2023-10-01T00:00:00.000Z",
+    deleted_at: null,
   },
   {
     id: "3",
-    entity: "PAMA",
-    district: "Tuban",
-    description: "Site Tuban",
-    row_status: 1,
+    name: "Christmas",
+    date: "2024-12-25T00:00:00.000Z",
+    description: "Christmas Day",
+    status: "inactive",
     created_at: "2023-10-01T00:00:00.000Z",
     updated_at: "2023-10-01T00:00:00.000Z",
+    deleted_at: null,
   },
 ];
 
-const delay = (time: number) =>
-  new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(true);
-    }, time);
-  });
-
-export const getEntityDistricts = async (
-  _params?: TFilterEntityDistrict,
-): Promise<TEntityDistrictListResponse> => {
-  await delay(1000);
+export const getHolidays = (
+  params: TFilterHoliday,
+): Promise<THolidayListResponse> => {
+  console.log(params);
   return Promise.resolve({
     status_code: 200,
-    items: listEntityDistricts,
-    meta: {
-      total_page: 1,
-      total: listEntityDistricts.length,
-      page: 1,
-      per_page: 10,
+    data: {
+      items: listHolidays,
+      meta: {
+        total_page: 1,
+        total: listHolidays.length,
+        page: 1,
+        per_page: 10,
+      },
     },
     version: "1.0.0",
   });
 };
 
-export const getDetailEntityDistrict = async (params: {
+export const getDetailHoliday = (params: {
   id: string;
-}): Promise<TEntityDistrictDetailResponse> => {
-  await delay(1000);
+}): Promise<THolidayDetailResponse> => {
+  console.log(params);
   return Promise.resolve({
     status_code: 200,
-    data: listEntityDistricts.find((item) => item.id === params.id)!,
+    data: listHolidays.find((item) => item.id === params.id)!,
     version: "1.0.0",
   });
 };
 
-export const createEntityDistrict = async (
-  _req: TEntityDistrictCreateRequest,
-): Promise<TEntityDistrictMutationResponse> => {
-  await delay(1000);
+export const createHoliday = (
+  req: THolidayRequest,
+): Promise<TResponseData<null>> => {
+  console.log(req);
   return Promise.resolve({
     status_code: 200,
-    data: "create success",
+    data: null,
     version: "1.0.0",
   });
 };
 
-export const updateEntityDistrict = async (
-  _params: { id: string },
-  _req: TEntityDistrictUpdateRequest,
-): Promise<TEntityDistrictMutationResponse> => {
-  await delay(1000);
+export const updateHoliday = (
+  params: { id: string },
+  req: THolidayRequest,
+): Promise<TResponseData<null>> => {
+  console.log(req, params);
   return Promise.resolve({
     status_code: 200,
-    data: "edit success",
+    data: null,
     version: "1.0.0",
   });
 };
 
-export const deleteEntityDistrict = async (_params: {
+export const deleteHoliday = (params: {
   id: string;
-}): Promise<TEntityDistrictMutationResponse> => {
-  await delay(1000);
+}): Promise<TResponseData<null>> => {
+  console.log(params);
   return Promise.resolve({
     status_code: 200,
-    data: "delete success",
-    version: "1.0.0",
-  });
-};
-
-export const deleteEntityDistricts = async (_req: {
-  ids: string[];
-}): Promise<TEntityDistrictMutationResponse> => {
-  await delay(1000);
-  return Promise.resolve({
-    status_code: 200,
-    data: "delete success",
+    data: null,
     version: "1.0.0",
   });
 };
@@ -186,9 +164,8 @@ export const deleteEntityDistricts = async (_req: {
 
 - All field names are in **English**
 - All field names use **snake_case** format
-- Status uses numeric type (0 = Inactive, 1 = Active)
-- Create request has optional `row_status` (defaults to 1)
-- Update request has all required fields including `row_status`
-- List response: `items` and `meta` at root level (not wrapped in `data`)
-- Detail response: `data` at root level
-- Mutation responses: return `T[Module]MutationResponse` with string message
+- Status uses string type (`"active"` | `"inactive"`)
+- Single `T[Module]Request` type shared for create and update
+- List response: items and meta wrapped inside `data` field (`data.items`, `data.meta`)
+- Detail response: entity in `data` field
+- Mutation responses: return `TResponseData<null>`

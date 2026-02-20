@@ -3,55 +3,45 @@
 ## type.ts Template
 
 ```typescript
-import {
-  TApiResponseData,
-  TApiResponsePagination,
-  TQueryParams,
-} from "@/commons/types/api";
+import { TFilterParams } from "@/commons/types/filter";
+import { TResponseData, TResponsePaginate } from "@/commons/types/response";
 
 // Status type (adjust based on module needs)
-export type T[Module]Status = 0 | 1; // or "active" | "inactive"
+export type T[Module]Status = "active" | "inactive"; // or 0 | 1
 
 export type T[Module] = {
   id: string;
   // ... all fields from prototype
-  row_status: T[Module]Status;
+  status: T[Module]Status;
   created_at?: string | null;
   updated_at?: string | null;
+  deleted_at?: string | null;
 };
 
-export type T[Module]CreateRequest = {
-  // ... fields for create (row_status optional, defaults to 1/active)
-  row_status?: T[Module]Status;
+export type T[Module]Request = {
+  // ... fields for create and update
+  status?: T[Module]Status;
 };
 
-export type T[Module]UpdateRequest = {
-  // ... all required fields for update
-  row_status: T[Module]Status;
-};
-
-export type TFilter[Module] = TQueryParams & {
+export type TFilter[Module] = TFilterParams<{
   // ... optional filters
-  row_status?: T[Module]Status;
-};
+  status?: T[Module]Status;
+}>;
 
-export type T[Module]ListResponse = TApiResponsePagination<T[Module]>;
-export type T[Module]DetailResponse = TApiResponseData<T[Module]>;
-// For mutations (create/update/delete), return string message
-export type T[Module]MutationResponse = TApiResponseData<string>;
+export type T[Module]ListResponse = TResponsePaginate<T[Module]>;
+export type T[Module]DetailResponse = TResponseData<T[Module]>;
 ```
 
 ## index.ts Template (Mock Data)
 
 ```typescript
+import { TResponseData } from "@/commons/types/response";
 import {
   TFilter[Module],
   T[Module],
-  T[Module]CreateRequest,
+  T[Module]Request,
   T[Module]DetailResponse,
   T[Module]ListResponse,
-  T[Module]MutationResponse,
-  T[Module]UpdateRequest,
 } from "./type";
 
 // Mock data array
@@ -59,43 +49,39 @@ const list[Module]s: T[Module][] = [
   {
     id: "1",
     // ... fields
-    row_status: 1,
+    status: "active",
     created_at: "2023-10-01T00:00:00.000Z",
     updated_at: "2023-10-01T00:00:00.000Z",
+    deleted_at: null,
   },
   // ... more items
 ];
 
-const delay = (time: number) =>
-  new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(true);
-    }, time);
-  });
-
-// List - returns items directly with meta at root level
-export const get[Module]s = async (
-  _params?: TFilter[Module],
+// List - returns paginated response with data.items and data.meta
+export const get[Module]s = (
+  params: TFilter[Module],
 ): Promise<T[Module]ListResponse> => {
-  await delay(1000);
+  console.log(params);
   return Promise.resolve({
     status_code: 200,
-    items: list[Module]s,
-    meta: {
-      total_page: 1,
-      total: list[Module]s.length,
-      page: 1,
-      per_page: 10,
+    data: {
+      items: list[Module]s,
+      meta: {
+        total_page: 1,
+        total: list[Module]s.length,
+        page: 1,
+        per_page: 10,
+      },
     },
     version: "1.0.0",
   });
 };
 
-// Detail - returns data at root level
-export const getDetail[Module] = async (params: {
+// Detail - returns single item in data field
+export const getDetail[Module] = (params: {
   id: string;
 }): Promise<T[Module]DetailResponse> => {
-  await delay(1000);
+  console.log(params);
   return Promise.resolve({
     status_code: 200,
     data: list[Module]s.find((item) => item.id === params.id)!,
@@ -103,51 +89,39 @@ export const getDetail[Module] = async (params: {
   });
 };
 
-// Create - returns string message
-export const create[Module] = async (
-  _req: T[Module]CreateRequest,
-): Promise<T[Module]MutationResponse> => {
-  await delay(1000);
+// Create - returns null data
+export const create[Module] = (
+  req: T[Module]Request,
+): Promise<TResponseData<null>> => {
+  console.log(req);
   return Promise.resolve({
     status_code: 200,
-    data: "create success",
+    data: null,
     version: "1.0.0",
   });
 };
 
-// Update - returns string message
-export const update[Module] = async (
-  _params: { id: string },
-  _req: T[Module]UpdateRequest,
-): Promise<T[Module]MutationResponse> => {
-  await delay(1000);
+// Update - returns null data
+export const update[Module] = (
+  params: { id: string },
+  req: T[Module]Request,
+): Promise<TResponseData<null>> => {
+  console.log(req, params);
   return Promise.resolve({
     status_code: 200,
-    data: "edit success",
+    data: null,
     version: "1.0.0",
   });
 };
 
-// Delete - returns string message
-export const delete[Module] = async (_params: {
+// Delete - returns null data
+export const delete[Module] = (params: {
   id: string;
-}): Promise<T[Module]MutationResponse> => {
-  await delay(1000);
+}): Promise<TResponseData<null>> => {
+  console.log(params);
   return Promise.resolve({
     status_code: 200,
-    data: "delete success",
-    version: "1.0.0",
-  });
-};
-
-// Bulk delete - returns string message
-export const delete[Module]s = async (_req: {
-  ids: string[];
-}): Promise<T[Module]MutationResponse> => {
-  await delay(1000);
-  return Promise.resolve({
-    status_code: 200,
-    data: "delete success",
+    data: null,
     version: "1.0.0",
   });
 };

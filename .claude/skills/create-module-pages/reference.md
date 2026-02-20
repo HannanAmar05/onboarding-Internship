@@ -2,22 +2,19 @@
 
 For the most up-to-date reference implementation, please consult the files in:
 
-**Management Reports - Entity Districts Module:**
-`src/app/(authenticated)/management-reports/master-data/entity-districts/`
+**Examples (FAQ) Module:**
+`src/app/(protected)/examples/`
 
-- **List Page**: `src/app/(authenticated)/management-reports/master-data/entity-districts/page.tsx`
-- **Create Page**: `src/app/(authenticated)/management-reports/master-data/entity-districts/create/page.tsx`
-- **Detail Page**: `src/app/(authenticated)/management-reports/master-data/entity-districts/[id]/page.tsx`
-- **Edit Page**: `src/app/(authenticated)/management-reports/master-data/entity-districts/[id]/edit/page.tsx`
-- **Form Component**: `src/app/(authenticated)/management-reports/master-data/entity-districts/_components/form/index.tsx`
-- **Form Schema**: `src/app/(authenticated)/management-reports/master-data/entity-districts/_components/form/schema.ts`
-- **Hooks**: `src/app/(authenticated)/management-reports/master-data/entity-districts/_hooks/`
-
-**For Configuration (period-plans, period-actuals):**
-`src/app/(authenticated)/management-reports/configuration/`
+- **List Page**: `src/app/(protected)/examples/page.tsx`
+- **Create Page**: `src/app/(protected)/examples/create/page.tsx`
+- **Detail Page**: `src/app/(protected)/examples/[id]/page.tsx`
+- **Update Page**: `src/app/(protected)/examples/[id]/update/page.tsx`
+- **Form Component**: `src/app/(protected)/examples/_components/form/index.tsx`
+- **Form Schema**: `src/app/(protected)/examples/_components/form/schema.ts`
+- **Hooks**: `src/app/(protected)/examples/_hooks/`
 
 Please read these files directly to understand the current patterns for module pages, including:
-- ModalAction component usage for delete confirmations
-- Query key exports from hooks
+- Delete confirmation via inline `mutate()` with `onSuccess` callback
+- Query/mutation keys exported as constants from individual hook files
 - Proper loading states and error handling
-- Route enum naming (MR prefix for Management Reports)
+- Route navigation using `ROUTES` object and `generatePath`

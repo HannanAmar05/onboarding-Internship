@@ -1,12 +1,14 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery } from "@/app/_hooks/request/use-query";
+
 import { getDetailFaq } from "@/api/example";
-import { QUERY_KEY } from "@/commons/constants/query-key";
+
+export const FAQ_QUERY_KEY = "get-detail-faq";
 
 const useFaqQuery = (id: string) => {
-    return useQuery({
-        queryKey: [QUERY_KEY.FAQ.DETAIL, { id }],
-        queryFn: () => getDetailFaq({ id }),
-    });
+  return useQuery({
+    queryKey: [FAQ_QUERY_KEY, { id }],
+    queryFn: () => getDetailFaq({ id }),
+  });
 };
 
 export default useFaqQuery;

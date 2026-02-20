@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button, Checkbox, Col, Flex, message, Row, Tag, Typography } from "antd";
 import {
   DeleteOutlined,
@@ -8,20 +9,21 @@ import {
   PlusCircleOutlined,
 } from "@ant-design/icons";
 import { ColumnsType } from "antd/es/table";
-import { Page } from "admiral";
-import Datatable from "admiral/table/datatable/index";
+import { DataTable, Page } from "admiral";
 import { generatePath, Link } from "react-router";
 
 import { makeSource } from "@/utils/data-table";
 import { TFaq } from "@/api/example/type";
 import { ROUTES } from "@/commons/constants/routes";
 import { useFilter } from "@/app/_hooks/datatable/use-filter";
+import ModalAction from "@/app/_components/ui/modals/modal-action";
 
 import useFaqsQuery from "./_hooks/use-faqs-query";
 import useDeleteFaqMutation from "./_hooks/use-delete-faq-mutation";
 import getFaqStatus from "./_utils/faq-tag";
 
 export const Component = () => {
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const { handleChange, pagination, filters } = useFilter();
 
   const faqsQuery = useFaqsQuery({
@@ -91,16 +93,7 @@ export const Component = () => {
             <Button
               type="link"
               icon={<DeleteOutlined style={{ color: "red" }} />}
-              onClick={() => {
-                deleteMutation.mutate(
-                  { id: record.id },
-                  {
-                    onSuccess: () => {
-                      message.success("Faq berhasil dihapus");
-                    },
-                  },
-                );
-              }}
+              onClick={() => setDeleteId(record.id)}
             />
             <Link
               to={generatePath(ROUTES.faq.update, {
@@ -124,7 +117,7 @@ export const Component = () => {
 
   return (
     <Page title="FAQs" breadcrumbs={breadcrumbs} topActions={<TopAction />} noStyle>
-      <Datatable
+      <DataTable
         filterComponents={[
           {
             label: "filter",
@@ -247,7 +240,7 @@ export const Component = () => {
             key: "delete",
             label: "Delete",
             onClick: (_values, cb) => {
-              message.success("Role berhasil dihapus");
+              message.success("Deleted successfully");
               cb.reset();
             },
             danger: true,
@@ -257,7 +250,7 @@ export const Component = () => {
             key: "download",
             label: "Download",
             onClick: (_values, cb) => {
-              message.success("Role berhasil didownload");
+              message.success("Downloaded successfully");
               cb.reset();
             },
             icon: <DownloadOutlined />,
@@ -270,6 +263,20 @@ export const Component = () => {
         source={makeSource(faqsQuery.data)}
         columns={columns}
         search={filters.search}
+      />
+
+      <ModalAction
+        type="delete"
+        title="Delete FAQ"
+        description="Are you sure you want to delete this FAQ? This action cannot be undone."
+        open={!!deleteId}
+        onCancel={() => setDeleteId(null)}
+        onOk={async () => {
+          if (!deleteId) return;
+          await deleteMutation.mutateAsync({ id: deleteId });
+          message.success("FAQ deleted successfully");
+          setDeleteId(null);
+        }}
       />
     </Page>
   );

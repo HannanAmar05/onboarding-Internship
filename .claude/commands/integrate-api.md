@@ -37,8 +37,8 @@ Allow multiple selection (e.g., "1, 3, 5" or "data-uploads, descriptions").
 Prompt: "Which API type do you want to use?"
 
 Options:
-1. **Real** - Use `api` constant (production endpoint)
-2. **Mock** - Use `apiMock` constant (BE mock endpoint)
+1. **Real** - Use `api` from `@/libs/axios/api` (production endpoint with auth)
+2. **Mock** - Use `apiMock` from `@/libs/axios/api` (BE mock endpoint, no auth)
 
 ### Step 5: Execute Integration Agent
 
@@ -46,13 +46,13 @@ For **EACH** selected module, use Task tool with these EXACT parameters:
 
 ```
 Task(
-  subagent_type: "general-purpose",
+  subagent_type: "api-integration-agent",
   run_in_background: false,  // IMPORTANT: Run in FOREGROUND
   description: "Integrate API for [module-name]",
   prompt: "Read and follow ALL instructions in .claude/agents/api-integration-agent.md
 
 Execute the integration with these inputs:
-- MODULE_PATH: [module path from mapping]
+- MODULE_PATH: src/api/[module-name]
 - API_DOC_PATH: docs/api/modules/[API Doc File]
 - FETCHER: [api|apiMock]
 
@@ -87,19 +87,19 @@ Show integration summary from agent:
 
 ## Module Path Mapping
 
-| Module Name | Module Path | App Path |
-|-------------|-------------|----------|
-| data-uploads | management-reports/data-uploads | management-reports/data-uploads |
-| data-uploads-files | management-reports/data-uploads | management-reports/data-uploads |
-| descriptions | management-reports/master-data/descriptions | management-reports/master-data/descriptions |
+| Module Name | API Path | App Path |
+|-------------|----------|----------|
+| data-uploads | src/api/data-uploads | src/app/(protected)/data-uploads |
+| data-uploads-files | src/api/data-uploads-files | src/app/(protected)/data-uploads-files |
+| descriptions | src/api/descriptions | src/app/(protected)/descriptions |
 
 ## API Type Reference
 
-| Type | Constant | Description |
-|------|----------|-------------|
-| Real | `api` | Production BE endpoint |
-| Mock | `apiMock` | BE mock endpoint |
-| Local | - | No endpoint, data in `index.ts` (fallback) |
+| Type | Constant | Import | Description |
+|------|----------|--------|-------------|
+| Real | `api` | `@/libs/axios/api` | Production BE endpoint (with auth interceptor) |
+| Mock | `apiMock` | `@/libs/axios/api` | BE mock endpoint (no auth interceptor) |
+| Local | - | - | No endpoint, data in `index.ts` (fallback) |
 
 ## Notes
 

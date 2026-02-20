@@ -12,9 +12,8 @@ The module has a "Preview" feature in the UI, but the API documentation does not
 
 ## Input
 
-- **MODULE_PATH**: `management-reports/reports`
+- **MODULE_PATH**: `src/api/reports`
 - **API_DOC_PATH**: `docs/api/modules/Reports.json`
-- **FETCHER**: `api`
 
 ## API Documentation (Partial)
 
@@ -24,12 +23,12 @@ The module has a "Preview" feature in the UI, but the API documentation does not
   "endpoints": [
     {
       "method": "GET",
-      "path": "/mreport/api/v1/reports",
+      "path": "/api/v1/reports",
       "description": "Get list of reports"
     },
     {
       "method": "GET",
-      "path": "/mreport/api/v1/reports/{id}",
+      "path": "/api/v1/reports/{id}",
       "description": "Get report detail"
     }
     // NOTE: No preview endpoint!
@@ -42,8 +41,9 @@ The module has a "Preview" feature in the UI, but the API documentation does not
 ### 1. Generate `type.ts`
 
 ```typescript
-// src/modules/management-reports/reports/type.ts
-import { TApiResponseData, TApiResponsePagination, TQueryParams } from "@/commons/types/api";
+// src/api/reports/type.ts
+import { TFilterParams } from "@/commons/types/filter";
+import { TResponseData, TResponsePaginate } from "@/commons/types/response";
 
 // Main entity type - matches API
 export type TReport = {
@@ -57,10 +57,10 @@ export type TReport = {
 };
 
 // Filter type
-export type TFilterReport = TQueryParams & {
+export type TFilterReport = TFilterParams<{
   report_name?: string;
   is_active?: boolean;
-};
+}>;
 
 // Preview type - LOCAL ONLY (no API)
 export type TReportPreview = {
@@ -72,33 +72,31 @@ export type TReportPreview = {
   columns: string[];
   sample_data: Record<string, unknown>[];
 };
+
+export type TReportListResponse = TResponsePaginate<TReport>;
+export type TReportDetailResponse = TResponseData<TReport>;
 ```
 
 ### 2. Generate `index.ts`
 
 ```typescript
-// src/modules/management-reports/reports/index.ts
-import { api } from "@/utils/fetcher-v2";
-import { TApiResponseData, TApiResponsePagination } from "@/commons/types/api";
+// src/api/reports/index.ts
+import { api } from "@/libs/axios/api";
+import { TResponseData, TResponsePaginate } from "@/commons/types/response";
 import { TReport, TFilterReport, TReportPreview } from "./type";
 
-const ENDPOINT = "/mreport/api/v1/reports";
-
-// Query keys
-export const getReportsQueryKey = "get-reports";
-export const getReportDetailQueryKey = "get-report-detail";
-export const getReportPreviewQueryKey = "get-report-preview";
+const ENDPOINT = "/api/v1/reports";
 
 // ============================================
 // REAL API FUNCTIONS
 // ============================================
 
 export const getReports = async (params?: TFilterReport) => {
-  return await api.get<TApiResponsePagination<TReport>>(ENDPOINT, { params });
+  return await api.get<TResponsePaginate<TReport>>(ENDPOINT, { params });
 };
 
-export const getReportById = async (params: { id: string }) => {
-  return await api.get<TApiResponseData<TReport>>(`${ENDPOINT}/${params.id}`);
+export const getDetailReport = async (params: { id: string }) => {
+  return await api.get<TResponseData<TReport>>(`${ENDPOINT}/${params.id}`);
 };
 
 // ============================================
@@ -123,44 +121,38 @@ const mockPreviewData: TReportPreview = {
 /**
  * Get report preview
  * TODO: Replace with real API when available
- * Endpoint needed: GET /mreport/api/v1/reports/{id}/preview
+ * Endpoint needed: GET /api/v1/reports/{id}/preview
  */
-export const getReportPreview = async (
-  params: { id: string }
-): Promise<TApiResponseData<TReportPreview>> => {
-  // Simulate network delay
-  await new Promise((resolve) => setTimeout(resolve, 500));
-
-  // Return mock data
-  return {
+export const getReportPreview = (
+  params: { id: string },
+): Promise<TResponseData<TReportPreview>> => {
+  return Promise.resolve({
     status_code: 200,
     data: {
       ...mockPreviewData,
       id: params.id,
     },
-  };
+    version: "1.0.0",
+  });
 };
 
 /**
  * Generate report preview
  * TODO: Replace with real API when available
- * Endpoint needed: POST /mreport/api/v1/reports/{id}/preview
+ * Endpoint needed: POST /api/v1/reports/{id}/preview
  */
-export const generateReportPreview = async (
+export const generateReportPreview = (
   params: { id: string },
-  options?: { forceRefresh?: boolean }
-): Promise<TApiResponseData<TReportPreview>> => {
-  // Simulate processing delay
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
-  return {
+): Promise<TResponseData<TReportPreview>> => {
+  return Promise.resolve({
     status_code: 200,
     data: {
       ...mockPreviewData,
       id: params.id,
       generated_at: new Date().toISOString(),
     },
-  };
+    version: "1.0.0",
+  });
 };
 ```
 
@@ -169,13 +161,15 @@ export const generateReportPreview = async (
 The preview feature continues to work with mock data:
 
 ```typescript
-// src/app/(authenticated)/management-reports/reports/[id]/_components/preview-section.tsx
+// src/app/(protected)/reports/[id]/_components/preview-section.tsx
 import { useQuery } from "@tanstack/react-query";
-import { getReportPreview, getReportPreviewQueryKey } from "@/modules/management-reports/reports";
+import { getReportPreview } from "@/api/reports";
+
+export const reportPreviewQueryKey = "get-report-preview";
 
 export const PreviewSection = ({ reportId }: { reportId: string }) => {
   const { data, isLoading } = useQuery({
-    queryKey: [getReportPreviewQueryKey, reportId],
+    queryKey: [reportPreviewQueryKey, reportId],
     queryFn: () => getReportPreview({ id: reportId }),
   });
 
@@ -199,22 +193,6 @@ export const PreviewSection = ({ reportId }: { reportId: string }) => {
 };
 ```
 
-### 4. Hook with Local Mock
-
-```typescript
-// src/app/(authenticated)/management-reports/reports/[id]/_hooks/use-get-report-preview.ts
-import { useQuery } from "@tanstack/react-query";
-import { getReportPreview, getReportPreviewQueryKey } from "@/modules/management-reports/reports";
-
-export const useGetReportPreview = (id: string) => {
-  return useQuery({
-    queryKey: [getReportPreviewQueryKey, id],
-    queryFn: () => getReportPreview({ id }),
-    enabled: !!id,
-  });
-};
-```
-
 ## Key Points
 
 1. **Preserve UI Feature**: The preview feature stays functional
@@ -222,16 +200,14 @@ export const useGetReportPreview = (id: string) => {
 3. **Document Expected Endpoint**: Note the endpoint that backend needs to create
 4. **Realistic Mock Data**: Provide sensible mock data structure
 5. **Same Interface**: Mock function returns same type as real API would
-6. **Simulate Delays**: Add timeout to mimic network latency
 
 ## When to Use Local Mock
 
 | Scenario | Action |
 |----------|--------|
-| API endpoint exists | Use `api` or `apiMock` |
+| API endpoint exists | Use `api` from `@/libs/axios/api` |
 | API endpoint coming soon | Use local mock + TODO |
 | Feature is frontend-only | Use local mock (permanent) |
-| API deprecated | Keep local mock as fallback |
 
 ## Migration Path
 
@@ -239,15 +215,12 @@ When the real API becomes available:
 
 ```typescript
 // Before (local mock)
-export const getReportPreview = async (params: { id: string }) => {
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  return { status_code: 200, data: mockPreviewData };
+export const getReportPreview = (params: { id: string }): Promise<TResponseData<TReportPreview>> => {
+  return Promise.resolve({ status_code: 200, data: mockPreviewData, version: "1.0.0" });
 };
 
 // After (real API)
 export const getReportPreview = async (params: { id: string }) => {
-  return await api.get<TApiResponseData<TReportPreview>>(
-    `${ENDPOINT}/${params.id}/preview`
-  );
+  return await api.get<TResponseData<TReportPreview>>(`${ENDPOINT}/${params.id}/preview`);
 };
 ```
