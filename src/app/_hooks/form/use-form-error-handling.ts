@@ -7,5 +7,5 @@ export const useFormErrorHandling = (
 ) => {
   useEffect(() => {
     error?.errors?.forEach((value) => onError?.(value));
-  }, [error]);
+  }, [error, onError]);
 };

@@ -1,9 +1,10 @@
 export const ROUTES = {
-  faq: {
-    list: "/examples/",
-    create: "/examples/create",
-    update: "/examples/:id/update",
-    detail: "/examples/:id",
+  post: {
+    list: "/posts",
+    create: "/posts/create",
+    update: "/posts/:id/update",
+    detail: "/posts/:id",
+    delete: "/posts/:id/delete"
   },
   dashboard: "/dashboard",
   auth: {

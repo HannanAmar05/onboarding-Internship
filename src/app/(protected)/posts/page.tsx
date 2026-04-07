@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Checkbox, Col, Flex, message, Row, Tag, Typography } from "antd";
+import { Button, Checkbox, Col, Flex, message, Popover, Row, Tag, Typography } from "antd";
 import {
   DeleteOutlined,
   DownloadOutlined,
@@ -49,7 +49,7 @@ export const Component = () => {
         return (
           <Typography.Link underline>
             <Link
-              to={generatePath(ROUTES.faq.detail, {
+              to={generatePath(ROUTES.post.detail, {
                 id: record.id,
               })}
             >
@@ -65,6 +65,34 @@ export const Component = () => {
       title: "Answer",
       ellipsis: true,
       sorter: true,
+    },
+    {
+      dataIndex: "contacts",
+      align: "center",
+      key: "contacts",
+      title: "Contacts",
+      render: (_, record) => {
+        const count = record.contacts?.length || 0;
+        if (count === 0) return <Tag>No Contact</Tag>;
+        return (
+          <Popover
+            title="Contact Details"
+            content={
+              <ul style={{ paddingLeft: 16, margin: 0 }}>
+                {record.contacts?.map((c, i) => (
+                  <li key={i}>
+                    <span style={{ color: "#888" }}>{c.type}:</span> {c.phone_number}
+                  </li>
+                ))}
+              </ul>
+            }
+          >
+            <Tag color="cyan" style={{ cursor: "help" }}>
+              {count} Numbers
+            </Tag>
+          </Popover>
+        );
+      },
     },
     {
       key: "status",
@@ -84,7 +112,7 @@ export const Component = () => {
         return (
           <Flex>
             <Link
-              to={generatePath(ROUTES.faq.detail, {
+              to={generatePath(ROUTES.post.detail, {
                 id: record.id,
               })}
             >
@@ -96,7 +124,7 @@ export const Component = () => {
               onClick={() => setDeleteId(record.id)}
             />
             <Link
-              to={generatePath(ROUTES.faq.update, {
+              to={generatePath(ROUTES.post.update, {
                 id: record.id,
               })}
             >
@@ -110,13 +138,13 @@ export const Component = () => {
 
   const breadcrumbs = [
     {
-      label: "FAQs",
-      path: ROUTES.faq.list,
+      label: "Posts",
+      path: ROUTES.post.list,
     },
   ];
 
   return (
-    <Page title="FAQs" breadcrumbs={breadcrumbs} topActions={<TopAction />} noStyle>
+    <Page title="Post Data" breadcrumbs={breadcrumbs} topActions={<TopAction />} noStyle>
       <DataTable
         filterComponents={[
           {
@@ -267,14 +295,14 @@ export const Component = () => {
 
       <ModalAction
         type="delete"
-        title="Delete FAQ"
-        description="Are you sure you want to delete this FAQ? This action cannot be undone."
+        title="Delete Post"
+        description="Are you sure you want to delete this Post? This action cannot be undone."
         open={!!deleteId}
         onCancel={() => setDeleteId(null)}
         onOk={async () => {
           if (!deleteId) return;
           await deleteMutation.mutateAsync({ id: deleteId });
-          message.success("FAQ deleted successfully");
+          message.success("Post deleted successfully");
           setDeleteId(null);
         }}
       />
@@ -283,7 +311,7 @@ export const Component = () => {
 };
 
 const TopAction = () => (
-  <Link to={ROUTES.faq.create}>
+  <Link to={ROUTES.post.create}>
     <Button icon={<PlusCircleOutlined />}>Add Faq</Button>
   </Link>
 );

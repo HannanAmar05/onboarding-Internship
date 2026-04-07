@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
   <head>
-      <script type="module">
+    <script type="module">
       if (import.meta.env.DEV) {
         // Helper to extract React Fiber debug source from a DOM element
         function getReactFiberDebugSource(element) {
@@ -9,7 +9,7 @@
 
           // Find the React Fiber key on the DOM element
           const fiberKey = Object.keys(element).find(
-            key => key.startsWith('__reactFiber$') || key.startsWith('__reactInternalInstance$')
+            (key) => key.startsWith("__reactFiber$") || key.startsWith("__reactInternalInstance$"),
           );
 
           if (!fiberKey) return null;
@@ -26,7 +26,8 @@
                 fileName: source.fileName,
                 lineNumber: source.lineNumber,
                 columnNumber: source.columnNumber,
-                componentName: currentFiber.type?.name || currentFiber.type?.displayName || 'Anonymous'
+                componentName:
+                  currentFiber.type?.name || currentFiber.type?.displayName || "Anonymous",
               });
             }
             currentFiber = currentFiber.return;
@@ -41,18 +42,25 @@
               // Extract source info from the first selected element
               const firstElement = elements?.[0];
               const debugSources = firstElement ? getReactFiberDebugSource(firstElement) : [];
-              debugSources.splice(debugSources.findIndex(({ fileName }) => fileName.includes('src/libs/react-router/transformers/route.tsx')))
+              debugSources.splice(
+                debugSources.findIndex(({ fileName }) =>
+                  fileName.includes("src/libs/react-router/transformers/route.tsx"),
+                ),
+              );
 
               // Format the source location info
-              const sourceInfo = debugSources.length > 0
-                ? debugSources.map(s =>
-                  `  ${s.componentName}: ${s.fileName}:${s.lineNumber}:${s.columnNumber}`
-                ).join('\n')
-                : '  (No source info available)';
+              const sourceInfo =
+                debugSources.length > 0
+                  ? debugSources
+                      .map(
+                        (s) =>
+                          `  ${s.componentName}: ${s.fileName}:${s.lineNumber}:${s.columnNumber}`,
+                      )
+                      .join("\n")
+                  : "  (No source info available)";
 
-              const cleanContent = typeof content === 'string'
-                ? content.replace(/\n\s*in\s+[^\n]*/g, '')
-                : content;
+              const cleanContent =
+                typeof content === "string" ? content.replace(/\n\s*in\s+[^\n]*/g, "") : content;
 
               const verboseContent = `
   === Trace Information ===
@@ -67,19 +75,28 @@
   ==================
   `.trim();
 
-              navigator.clipboard
-                .writeText(verboseContent)
-                .then(() => {
-                  console.log("Copied extended context with source info to clipboard.");
-                  console.log("Debug sources:", debugSources);
-                })
+              navigator.clipboard.writeText(verboseContent).then(() => {
+                console.log("Copied extended context with source info to clipboard.");
+                console.log("Debug sources:", debugSources);
+              });
             },
-          })
+          });
         });
       }
     </script>
     <meta charset="UTF-8" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data: https:; connect-src 'self' https:;">
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="
+    default-src 'self';
+    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://www.gstatic.com;
+    style-src 'self' 'unsafe-inline';
+    img-src 'self' data: https:;
+    font-src 'self' data: https:;
+    frame-src https://accounts.google.com https://*.firebaseapp.com;
+    connect-src 'self' https: https://apis.google.com https://www.googleapis.com https://www.gstatic.com;
+  "
+    />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vite Admiral</title>

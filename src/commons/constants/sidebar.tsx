@@ -22,9 +22,14 @@ export const SIDEBAR_ITEMS: TSidebarItem[] = [
     label: <Link to="/dashboard">Dashboard</Link>,
     icon: <DashboardFilled />,
   },
+  // {
+  //   key: "examples",
+  //   label: <Link to="/examples">FAQs</Link>,
+  //   icon: <QuestionCircleOutlined />,
+  // },
   {
-    key: "examples",
-    label: <Link to="/examples">FAQs</Link>,
+    key: "posts",
+    label: <Link to="/posts">Posts</Link>,
     icon: <QuestionCircleOutlined />,
   },
   {

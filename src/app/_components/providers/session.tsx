@@ -18,8 +18,8 @@ type Session = {
 };
 
 const SessionContext = createContext<Session>({
-  signin: () => { },
-  signout: () => { },
+  signin: () => {},
+  signout: () => {},
   session: undefined,
   status: undefined,
 });
@@ -46,11 +46,10 @@ const SessionProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
     setStatus("authenticating");
     oidcMutate(payload, {
       onSuccess: (res) => {
+        SessionUser.set({ user: res.data.user, });
+
         setSessionData(res.data);
-
         setStatus("authenticated");
-
-        SessionUser.set(res.data);
 
         setTimeout(() => {
           navigate("/dashboard");

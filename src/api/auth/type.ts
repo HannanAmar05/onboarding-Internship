@@ -15,7 +15,8 @@ export type TLoginResponse = {
 };
 
 export type TLoginOidcParam = {
-  code: string;
+  token:string
+  provider: string;
 };
 
 export type TLoginOidcResponse = {
