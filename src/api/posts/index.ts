@@ -52,7 +52,8 @@ export const getFaqs = async (params: TFilterFaq): Promise<TFaqListResponse> => 
       _limit: params.per_page || 5,
     },
   });
-
+  
+  console.log(response)
   const totalDataServer = Number(response.headers["x-total-count"]) || 0;
   const limit = params.per_page || 6;
 

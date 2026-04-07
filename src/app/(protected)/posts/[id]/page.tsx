@@ -56,21 +56,15 @@ export const Component = () => {
     },
     {
       key: "question",
-      label: "Question",
+      label: "Title",
       span: 24,
-      children: <Typography.Text strong>{data?.data.question ?? "-"}</Typography.Text>,
+      children: <Typography.Text strong>{data?.data.title ?? "-"}</Typography.Text>,
     },
     {
       key: "answer",
       span: 24,
-      label: "Answer",
-      children: <Typography.Text strong>{data?.data.answer ?? "-"}</Typography.Text>,
-    },
-    {
-      key: "contacts",
-      span: 24,
-      label: "Answer",
-      children: <Typography.Text strong>{data?.data.answer ?? "-"}</Typography.Text>,
+      label: "Description",
+      children: <Typography.Text strong>{data?.data.body ?? "-"}</Typography.Text>,
     },
     {
       key: "contacts",

@@ -43,7 +43,7 @@ export const Component = () => {
     {
       dataIndex: "question",
       key: "question",
-      title: "Question",
+      title: "Title",
       sorter: true,
       render: (_, record) => {
         return (
@@ -53,7 +53,7 @@ export const Component = () => {
                 id: record.id,
               })}
             >
-              {record.question}
+              {record.title}
             </Link>
           </Typography.Link>
         );
@@ -62,9 +62,12 @@ export const Component = () => {
     {
       dataIndex: "answer",
       key: "answer",
-      title: "Answer",
+      title: "Description",
       ellipsis: true,
       sorter: true,
+      render: (_, render) => {
+        return <Typography.Text ellipsis>{render.body}</Typography.Text>;
+      }
     },
     {
       dataIndex: "contacts",
