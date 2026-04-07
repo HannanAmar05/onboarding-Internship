@@ -21,7 +21,6 @@ import { useState } from "react";
 import { PERMISSIONS } from "@/commons/constants/permissions";
 import { Guard } from "@/app/_components/guard";
 
-export const permissions = [PERMISSIONS.USERS.READ_USERS];
 
 const provinces = [
   {

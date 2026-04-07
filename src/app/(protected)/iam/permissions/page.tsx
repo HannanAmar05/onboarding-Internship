@@ -21,7 +21,6 @@ import { urlParser } from "@/utils/url-parser";
 import { PERMISSIONS } from "@/commons/constants/permissions";
 import { Guard } from "@/app/_components/guard";
 
-export const permissions = [PERMISSIONS.PERMISSIONS.READ_PERMISSIONS];
 
 export const Component = () => {
   const navigate = useNavigate();

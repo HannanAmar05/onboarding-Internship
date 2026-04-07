@@ -8,7 +8,6 @@ import { useDeleteUserMutation } from "../../_hooks/use-delete-user-mutation";
 import { PERMISSIONS } from "@/commons/constants/permissions";
 import { Guard } from "@/app/_components/guard";
 
-export const permissions = [PERMISSIONS.USERS.READ_USERS];
 
 export const Component = () => {
   const params = useParams();

@@ -10,7 +10,6 @@ import { useDeleteRole } from "../../_hooks/use-delete-role";
 import { PERMISSIONS } from "@/commons/constants/permissions";
 import { Guard } from "@/app/_components/guard";
 
-export const permissions = [PERMISSIONS.ROLES.READ_ROLES];
 
 export const Component = () => {
   const params = useParams();

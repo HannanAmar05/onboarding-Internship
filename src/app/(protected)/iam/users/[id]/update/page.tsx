@@ -6,9 +6,7 @@ import { useUserQuery } from "../_hooks/use-user-query";
 import { useNavigate, useParams } from "react-router";
 import { FormUser } from "../../_components/form-user";
 import { ROUTES } from "@/commons/constants/routes";
-import { PERMISSIONS } from "@/commons/constants/permissions";
 
-export const permissions = [PERMISSIONS.USERS.UPDATE_USERS];
 
 export const Component = () => {
   const params = useParams();

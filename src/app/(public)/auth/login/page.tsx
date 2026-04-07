@@ -5,7 +5,7 @@ import { useNavigate, useSearchParams } from "react-router";
 import { useEffect, useState } from "react";
 import { useSession } from "@/app/_components/providers/session";
 import { usePostLogin } from "./_hooks/use-post-login";
-import { signInWithPopup } from "firebase/auth";
+import { AuthProvider, signInWithPopup } from "firebase/auth";
 import { auth, googleProvider, githubProvider } from "@/libs/firebase/firebase";
 
 const Component: React.FC = () => {
@@ -28,17 +28,19 @@ const Component: React.FC = () => {
     mutate(values);
 
   // Handler Social Login (Google & GitHub)
-  const handleSocialLogin = async (provider: any) => {
+  const handleSocialLogin = async (provider: AuthProvider) => {
     setSocialLoading(true);
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       const token = await user.getIdToken();
-      
+
       message.success(`Welcome, ${user.displayName}!`);
       session.signin({ provider: provider.providerId, token });
-    } catch (error: any) {
-      if (error.code !== "auth/popup-closed-by-user") {
+    } catch (error: unknown) {
+      const firebaseError = error as { code?: string };
+
+      if (firebaseError.code !== "auth/popup-closed-by-user") {
         message.error("Social login failed. Please try again.");
       }
       console.error("Social Auth Error:", error);
@@ -62,11 +64,14 @@ const Component: React.FC = () => {
         }}
       >
         {/* Header Section */}
-        <Space direction="vertical" style={{ width: "100%", textAlign: "center", marginBottom: "2rem" }}>
-          <Typography.Title level={3} style={{ margin: 0 }}>Welcome back!</Typography.Title>
-          <Typography.Text type="secondary">
-            Please enter your details to sign in
-          </Typography.Text>
+        <Space
+          direction="vertical"
+          style={{ width: "100%", textAlign: "center", marginBottom: "2rem" }}
+        >
+          <Typography.Title level={3} style={{ margin: 0 }}>
+            Welcome back!
+          </Typography.Title>
+          <Typography.Text type="secondary">Please enter your details to sign in</Typography.Text>
         </Space>
 
         {/* Form Login Biasa */}
@@ -88,13 +93,7 @@ const Component: React.FC = () => {
           </Form.Item>
 
           <Form.Item>
-            <Button 
-              type="primary" 
-              htmlType="submit" 
-              loading={loading} 
-              block 
-              size="large"
-            >
+            <Button type="primary" htmlType="submit" loading={loading} block size="large">
               Log in
             </Button>
           </Form.Item>
@@ -109,19 +108,19 @@ const Component: React.FC = () => {
 
         {/* Social Buttons */}
         <Space direction="vertical" style={{ width: "100%" }} size="middle">
-          <Button 
-            icon={<GoogleOutlined />} 
-            block 
+          <Button
+            icon={<GoogleOutlined />}
+            block
             size="large"
             onClick={() => handleSocialLogin(googleProvider)}
             disabled={socialLoading || loading}
           >
             Google
           </Button>
-          
-          <Button 
-            icon={<GithubOutlined />} 
-            block 
+
+          <Button
+            icon={<GithubOutlined />}
+            block
             size="large"
             onClick={() => handleSocialLogin(githubProvider)}
             disabled={socialLoading || loading}
@@ -132,6 +131,6 @@ const Component: React.FC = () => {
       </Col>
     </Row>
   );
-};
+};;
 
 export default Component;

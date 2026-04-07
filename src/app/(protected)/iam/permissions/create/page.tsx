@@ -5,9 +5,7 @@ import { FormPermission } from "../_components/form-permission";
 import { PermissionFormData } from "../_components/form-permission/schema";
 import { useCreatePermissionMutation } from "./_hooks/use-create-permission-mutation";
 import { useNavigate } from "react-router";
-import { PERMISSIONS } from "@/commons/constants/permissions";
 
-export const permissions = [PERMISSIONS.PERMISSIONS.CREATE_PERMISSIONS];
 
 export const Component = () => {
   const navigate = useNavigate();
